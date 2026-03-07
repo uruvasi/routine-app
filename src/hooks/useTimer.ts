@@ -2,13 +2,29 @@ import { useEffect, useRef } from 'react'
 import { useTimerStore } from '../store/timerStore'
 import { useRoutineStore } from '../store/routineStore'
 import { useAudioAlert } from './useAudioAlert'
+import type { TimerStatus } from '../types'
 
 export function useTimer() {
   const store = useTimerStore()
   const routines = useRoutineStore((s) => s.routines)
-  const { playAlert } = useAudioAlert()
+  const { playAlert, playStartAlert, speak } = useAudioAlert()
   const lastTickRef = useRef<number | null>(null)
   const animFrameRef = useRef<number | null>(null)
+  const prevStatusRef = useRef<TimerStatus>('idle')
+
+  useEffect(() => {
+    const prev = prevStatusRef.current
+    prevStatusRef.current = store.status
+    if (store.status === 'running' && prev === 'idle') {
+      playStartAlert()
+      if (store.mode === 'routine') {
+        const state = useTimerStore.getState()
+        const routine = routines.find((r) => r.id === state.activeRoutineId)
+        const task = routine?.tasks[state.currentTaskIndex]
+        if (task) speak(`${task.name}をはじめます`)
+      }
+    }
+  }, [store.status])
 
   useEffect(() => {
     if (store.status !== 'running') {
@@ -45,7 +61,7 @@ export function useTimer() {
 
         const current = useTimerStore.getState()
         if (current.remaining === 0) {
-          handlePhaseEnd(current, routines, playAlert)
+          handlePhaseEnd(current, routines, playAlert, playStartAlert, speak)
           return
         }
       }
@@ -62,24 +78,26 @@ export function useTimer() {
         animFrameRef.current = null
       }
     }
-  }, [store.status, store.mode, store.currentIntervalIndex, store.currentTaskIndex, routines, playAlert])
+  }, [store.status, store.mode, store.currentIntervalIndex, store.currentTaskIndex, routines, playAlert, playStartAlert, speak])
 }
 
 function handlePhaseEnd(
   s: ReturnType<typeof useTimerStore.getState>,
   routines: ReturnType<typeof useRoutineStore.getState>['routines'],
-  playAlert: () => void
+  playAlert: () => void,
+  playStartAlert: () => void,
+  speak: (text: string) => void
 ) {
   playAlert()
 
   if (s.mode === 'pomodoro') {
     if (s.pomodoroPhase === 'work') {
       useTimerStore.getState().nextPhase(s.pomodoroBreakDuration, 'break')
+      playStartAlert()
     } else {
-      useTimerStore
-        .getState()
-        .nextPhase(s.pomodoroWorkDuration, 'work')
+      useTimerStore.getState().nextPhase(s.pomodoroWorkDuration, 'work')
       useTimerStore.setState((prev) => ({ pomodoroCount: prev.pomodoroCount + 1 }))
+      playStartAlert()
     }
     return
   }
@@ -94,6 +112,7 @@ function handlePhaseEnd(
         total: nextPhase.duration,
         status: 'running',
       })
+      playStartAlert()
     } else {
       useTimerStore.getState().finish()
     }
@@ -112,6 +131,8 @@ function handlePhaseEnd(
           total: nextTask.duration,
           status: 'running',
         })
+        playStartAlert()
+        speak(`${nextTask.name}をはじめます`)
       } else {
         useTimerStore.getState().finish()
       }
