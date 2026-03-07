@@ -18,11 +18,24 @@ iPhoneをメインターゲットにした PWA（Progressive Web App）。
 | ファイル | 役割 |
 |---|---|
 | `src/types/index.ts` | 共有型定義 |
-| `src/store/routineStore.ts` | ルーティン CRUD（localStorage 永続） |
-| `src/store/timerStore.ts` | タイマー状態機械（mode / status / remaining / total） |
+| `src/store/routineStore.ts` | ルーティン CRUD（localStorage 永続）+ `importRoutines` |
+| `src/store/timerStore.ts` | タイマー状態機械（mode / status / remaining / total）+ `jumpToTask` |
 | `src/hooks/useTimer.ts` | rAF ベースのティックループ、Page Visibility API 対応 |
 | `src/hooks/useWakeLock.ts` | Wake Lock API ラッパー |
 | `src/hooks/useAudioAlert.ts` | Web Audio API ビープ音 + SpeechSynthesis 読み上げ |
+| `src/utils/routineMarkdown.ts` | Markdown Export/Import 純粋関数 |
+
+## 現在の画面構成
+
+```
+BottomNav: タイマー / ルーティン / 設定
+  タイマー画面
+    上部タブ: カウントダウン / ルーティン  ← 将来的に廃止予定（下部統合を検討）
+  ルーティン画面（一覧 → 編集）
+  設定画面（Export/Import/リセット）
+```
+
+> **次の構成変更案**: 上部タブ（カウントダウン/ルーティン）を廃止し、BottomNav に統合して3→4タブ or 別構成に変更することを検討中。
 
 ## タイマーモード（現在有効）
 
@@ -39,57 +52,69 @@ iPhoneをメインターゲットにした PWA（Progressive Web App）。
 - 完了時: 終了音 + 「完了しました」
 
 ### ルーティン
-- タスク開始時（スタート・自動進行・◀▶ジャンプ）: 開始音 + 「タスク名をはじめます」
+- タスク開始時（スタート・自動進行）: 開始音 + 「タスク名をはじめます」
+- ◀▶ジャンプ時: running 中のみ開始音 + 読み上げ（停止中はサイレント）
 - タスク完了（自動進行）: 終了音
 
-## ビルド
+## Export/Import 仕様（Markdown形式）
+
+```markdown
+# ルーティン名
+- タスク名: X分
+- タスク名: X分Y秒
+```
+
+- エクスポート: `routines-YYYY-MM-DD.md` としてダウンロード
+- インポート: 「既存に追加」か「すべて置き換え」を選択してからファイル選択
+
+## ビルド・バージョン
 
 ```bash
 npm run dev    # 開発サーバー
 npm run build  # 本番ビルド（dist/ に PWA ファイル生成）
 ```
 
-PWA アイコン: `public/icons/icon-192.png`, `icon-512.png`
+- バージョンは `package.json` の `version` を管理。デプロイごとに手動で上げる
+- `vite.config.ts` で `__APP_VERSION__` としてビルド時に埋め込み、設定画面に表示
+- 現在: **v0.4.2**
 
 ---
 
 ## セッション記録
 
-### 2026-03-08 — UI簡略化・ルーティンナビゲーション・音声読み上げ
+### 2026-03-08 — セッション1: UI簡略化・ルーティンナビゲーション・音声読み上げ
 
-**やったこと:**
+1. ポモドーロ・インターバルタブを削除（カウントダウンとルーティンのみ）、古いモード値フォールバック追加
+2. カウントダウンプリセット変更（1/5/10/15/20/30分 → 3/5/10/15/25/50分）
+3. `jumpToTask(index, duration)` アクション追加、◀▶ボタンをルーティン実行画面に追加
+4. カウントダウン音声読み上げ追加（開始・残り1分・完了）
+5. ◀▶ジャンプ時の音声対応
 
-1. **タブ削減** (`TimerScreen.tsx`)
-   - ポモドーロ・インターバルタブを削除、カウントダウンとルーティンのみに
-   - 古いモード値のフォールバック `useEffect` を追加
+### 2026-03-08 — セッション2: Export/Import・バージョン管理・各種バグ修正
 
-2. **カウントダウンプリセット変更** (`CountdownTimer.tsx`)
-   - 1/5/10/15/20/30分 → 3/5/10/15/25/50分
+1. **Markdown Export/Import 実装** (`src/utils/routineMarkdown.ts`)
+   - エクスポート: `.md` ファイルダウンロード
+   - インポート: 「既存に追加」「すべて置き換え」選択式
+2. **バージョン管理導入** — `package.json` → `__APP_VERSION__` → 設定画面表示
+3. **ルーティン削除ボタン** を RoutineEditor に追加（タスク削除はあったがルーティン自体の削除が未実装だった）
+4. **バグ修正**:
+   - RoutineEditor の「実行」ボタンでタイマータブに自動遷移するように
+   - 実行ボタンで即スタート（スタートボタン不要に）
+   - 停止中の◀▶ジャンプで音声が鳴っていた問題を修正（running 中のみ発火）
 
-3. **ルーティンタスクナビゲーション** (`timerStore.ts`, `RoutineTimer.tsx`)
-   - `jumpToTask(index, duration)` アクションを追加
-   - ルーティン実行画面に◀▶ボタンを追加
-   - 先頭・末尾でそれぞれ disabled
-
-4. **ジャンプ時の音声対応** (`RoutineTimer.tsx`)
-   - ◀▶でジャンプした際に `playStartAlert()` + `speak()` を発火
-
-5. **カウントダウン音声読み上げ** (`useTimer.ts`)
-   - 開始・残り1分・完了の読み上げを追加
-
-**現在の状態:** すべて main にマージ済み、Cloudflare Pages にデプロイ済み。
+**現在の状態:** v0.4.2、main にマージ済み、Cloudflare Pages にデプロイ済み。
 
 ---
 
 ## 今後やりたいこと（バックログ）
 
 ### 優先度高
+- **画面構成の変更** — 上部タブ（カウントダウン/ルーティン）を廃止し、BottomNav に統合。現状の「タイマー/ルーティン/設定」3タブ構成を見直す
 - **ルーティンの改善全般** — タスク並び替え（ドラッグ）、タスクごとの細かい設定など
-- **ルーティン Export / Import** — JSON でのバックアップ・共有機能
 - **多言語対応（日本語 / 英語）** — i18n 対応
 
-### 優先度中
-- **認証** — ログイン機能（ルーティンのクラウド同期への布石）
+### 優先度低（シンプルな現状でテスト後に判断）
+- **認証・デバイス間連携** — 面倒になる可能性があるため、現状のシンプルな localStorage 構成でしばらくテスト予定
 - **Apple Watch 通知** — タスク完了・切り替え時に通知を飛ばしたい
 
 ### 難しいが検討中
@@ -99,5 +124,5 @@ PWA アイコン: `public/icons/icon-192.png`, `icon-512.png`
 
 ## 未解決・要確認
 
-- ルーティンの動作全般（特に多タスク時の挙動）を実機でテスト中
 - バックグラウンド時のタイマー精度（Page Visibility API で一定対応済みだが完全ではない）
+- `types/index.ts` の `TimerMode` 型に `pomodoro` / `interval` が残存（デッドコード）
