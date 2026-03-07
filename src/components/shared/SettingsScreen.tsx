@@ -44,7 +44,7 @@ export function SettingsScreen() {
       <div className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
         <div className="px-4 py-3 flex justify-between items-center">
           <span className="text-sm text-gray-700 dark:text-gray-300">バージョン</span>
-          <span className="text-sm text-gray-400">1.0.0</span>
+          <span className="text-sm text-gray-400">{__APP_VERSION__}</span>
         </div>
         <div className="px-4 py-3 flex justify-between items-center">
           <span className="text-sm text-gray-700 dark:text-gray-300">データ保存先</span>
