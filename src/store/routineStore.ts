@@ -11,6 +11,7 @@ interface RoutineStore {
   updateTask: (routineId: string, taskId: string, name: string, duration: number) => void
   deleteTask: (routineId: string, taskId: string) => void
   reorderTasks: (routineId: string, tasks: Task[]) => void
+  importRoutines: (incoming: Routine[]) => void
 }
 
 const genId = () => Math.random().toString(36).slice(2, 10)
@@ -85,6 +86,9 @@ export const useRoutineStore = create<RoutineStore>()(
             r.id === routineId ? { ...r, tasks } : r
           ),
         })),
+
+      importRoutines: (incoming) =>
+        set((s) => ({ routines: [...s.routines, ...incoming] })),
     }),
     { name: 'routine-store' }
   )
