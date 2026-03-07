@@ -13,7 +13,7 @@ interface Props {
 
 export function RoutineEditor({ routine, onBack, onStartTimer }: Props) {
   const { updateRoutine, deleteRoutine, addTask, updateTask, deleteTask } = useRoutineStore()
-  const setActiveRoutine = useTimerStore((s) => s.setActiveRoutine)
+  const { setActiveRoutine, start } = useTimerStore()
 
   const [editingName, setEditingName] = useState(false)
   const [name, setName] = useState(routine.name)
@@ -44,6 +44,7 @@ export function RoutineEditor({ routine, onBack, onStartTimer }: Props) {
   const handleStartTimer = () => {
     if (routine.tasks.length > 0) {
       setActiveRoutine(routine.id, routine.tasks[0].duration)
+      start()
       onStartTimer()
     }
   }
