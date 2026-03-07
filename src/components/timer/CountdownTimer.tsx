@@ -4,12 +4,12 @@ import { CircularTimer } from './CircularTimer'
 import { Button } from '../shared/Button'
 
 const PRESETS = [
-  { label: '1分', seconds: 60 },
-  { label: '5分', seconds: 300 },
+  { label: '3分',  seconds: 180 },
+  { label: '5分',  seconds: 300 },
   { label: '10分', seconds: 600 },
   { label: '15分', seconds: 900 },
-  { label: '20分', seconds: 1200 },
-  { label: '30分', seconds: 1800 },
+  { label: '25分', seconds: 1500 },
+  { label: '50分', seconds: 3000 },
 ]
 
 export function CountdownTimer() {

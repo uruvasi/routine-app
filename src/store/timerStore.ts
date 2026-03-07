@@ -22,6 +22,7 @@ interface TimerStore extends TimerState {
   addIntervalPhase: () => void
   updateIntervalPhase: (id: string, name: string, duration: number) => void
   deleteIntervalPhase: (id: string) => void
+  jumpToTask: (index: number, duration: number) => void
 }
 
 const initialState: TimerState = {
@@ -174,6 +175,9 @@ export const useTimerStore = create<TimerStore>()(
         set((s) => ({
           intervalPhases: s.intervalPhases.filter((p) => p.id !== id),
         })),
+
+      jumpToTask: (index, duration) =>
+        set({ currentTaskIndex: index, remaining: duration, total: duration }),
     }),
     {
       name: 'timer-store',

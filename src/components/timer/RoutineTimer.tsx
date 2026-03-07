@@ -8,7 +8,7 @@ export function RoutineTimer() {
     status, remaining, total,
     activeRoutineId, currentTaskIndex,
     start, pause, reset,
-    setActiveRoutine,
+    setActiveRoutine, jumpToTask,
   } = useTimerStore()
   const routines = useRoutineStore((s) => s.routines)
 
@@ -50,6 +50,20 @@ export function RoutineTimer() {
 
   const totalTasks = activeRoutine.tasks.length
 
+  const handlePrev = () => {
+    if (currentTaskIndex > 0) {
+      const prevTask = activeRoutine.tasks[currentTaskIndex - 1]
+      jumpToTask(currentTaskIndex - 1, prevTask.duration)
+    }
+  }
+
+  const handleNext = () => {
+    if (currentTaskIndex < totalTasks - 1) {
+      const nextTask = activeRoutine.tasks[currentTaskIndex + 1]
+      jumpToTask(currentTaskIndex + 1, nextTask.duration)
+    }
+  }
+
   return (
     <div className="flex flex-col items-center gap-6 py-4">
       <CircularTimer
@@ -59,7 +73,8 @@ export function RoutineTimer() {
         sublabel={`${currentTaskIndex + 1} / ${totalTasks}`}
       />
 
-      <div className="flex gap-3">
+      <div className="flex items-center gap-3">
+        <Button variant="secondary" onClick={handlePrev} disabled={currentTaskIndex === 0}>◀</Button>
         {status === 'idle' || status === 'finished' ? (
           <Button size="lg" onClick={start}>スタート</Button>
         ) : status === 'running' ? (
@@ -68,6 +83,7 @@ export function RoutineTimer() {
           <Button size="lg" onClick={start}>再開</Button>
         )}
         <Button size="lg" variant="secondary" onClick={reset}>リセット</Button>
+        <Button variant="secondary" onClick={handleNext} disabled={currentTaskIndex === totalTasks - 1}>▶</Button>
       </div>
 
       <button

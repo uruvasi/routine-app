@@ -1,16 +1,13 @@
+import { useEffect } from 'react'
 import { useTimerStore } from '../../store/timerStore'
 import { useTimer } from '../../hooks/useTimer'
 import { useWakeLock } from '../../hooks/useWakeLock'
 import { CountdownTimer } from './CountdownTimer'
-import { PomodoroTimer } from './PomodoroTimer'
-import { IntervalTimer } from './IntervalTimer'
 import { RoutineTimer } from './RoutineTimer'
 import type { TimerMode } from '../../types'
 
 const MODES: { id: TimerMode; label: string }[] = [
   { id: 'countdown', label: 'カウントダウン' },
-  { id: 'pomodoro', label: 'ポモドーロ' },
-  { id: 'interval', label: 'インターバル' },
   { id: 'routine', label: 'ルーティン' },
 ]
 
@@ -18,6 +15,10 @@ export function TimerScreen() {
   const { mode, status, setMode } = useTimerStore()
   useTimer()
   useWakeLock(status === 'running')
+
+  useEffect(() => {
+    if (mode === 'pomodoro' || mode === 'interval') setMode('countdown')
+  }, [mode])
 
   return (
     <div className="flex flex-col h-full">
@@ -41,8 +42,6 @@ export function TimerScreen() {
 
       <div className="flex-1 overflow-y-auto">
         {mode === 'countdown' && <CountdownTimer />}
-        {mode === 'pomodoro' && <PomodoroTimer />}
-        {mode === 'interval' && <IntervalTimer />}
         {mode === 'routine' && <RoutineTimer />}
       </div>
     </div>
