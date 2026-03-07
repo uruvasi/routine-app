@@ -8,9 +8,10 @@ import { Button } from '../shared/Button'
 interface Props {
   routine: Routine
   onBack: () => void
+  onStartTimer: () => void
 }
 
-export function RoutineEditor({ routine, onBack }: Props) {
+export function RoutineEditor({ routine, onBack, onStartTimer }: Props) {
   const { updateRoutine, deleteRoutine, addTask, updateTask, deleteTask } = useRoutineStore()
   const setActiveRoutine = useTimerStore((s) => s.setActiveRoutine)
 
@@ -43,6 +44,7 @@ export function RoutineEditor({ routine, onBack }: Props) {
   const handleStartTimer = () => {
     if (routine.tasks.length > 0) {
       setActiveRoutine(routine.id, routine.tasks[0].duration)
+      onStartTimer()
     }
   }
 

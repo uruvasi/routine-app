@@ -12,7 +12,7 @@ export default function App() {
     <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
       <main className="flex-1 overflow-hidden">
         {tab === 'timer' && <TimerScreen />}
-        {tab === 'routine' && <RoutineList />}
+        {tab === 'routine' && <RoutineList onNavigateToTimer={() => setTab('timer')} />}
         {tab === 'settings' && <SettingsScreen />}
       </main>
       <BottomNav active={tab} onChange={setTab} />

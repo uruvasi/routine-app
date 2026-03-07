@@ -3,7 +3,11 @@ import { useRoutineStore } from '../../store/routineStore'
 import { RoutineEditor } from './RoutineEditor'
 import { Button } from '../shared/Button'
 
-export function RoutineList() {
+interface Props {
+  onNavigateToTimer: () => void
+}
+
+export function RoutineList({ onNavigateToTimer }: Props) {
   const { routines, addRoutine } = useRoutineStore()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [newName, setNewName] = useState('')
@@ -12,7 +16,13 @@ export function RoutineList() {
   const selected = routines.find((r) => r.id === selectedId)
 
   if (selected) {
-    return <RoutineEditor routine={selected} onBack={() => setSelectedId(null)} />
+    return (
+      <RoutineEditor
+        routine={selected}
+        onBack={() => setSelectedId(null)}
+        onStartTimer={onNavigateToTimer}
+      />
+    )
   }
 
   const handleAdd = () => {

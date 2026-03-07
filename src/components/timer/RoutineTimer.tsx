@@ -56,8 +56,10 @@ export function RoutineTimer() {
     if (currentTaskIndex > 0) {
       const prevTask = activeRoutine.tasks[currentTaskIndex - 1]
       jumpToTask(currentTaskIndex - 1, prevTask.duration)
-      playStartAlert()
-      speak(`${prevTask.name}をはじめます`)
+      if (status === 'running') {
+        playStartAlert()
+        speak(`${prevTask.name}をはじめます`)
+      }
     }
   }
 
@@ -65,8 +67,10 @@ export function RoutineTimer() {
     if (currentTaskIndex < totalTasks - 1) {
       const nextTask = activeRoutine.tasks[currentTaskIndex + 1]
       jumpToTask(currentTaskIndex + 1, nextTask.duration)
-      playStartAlert()
-      speak(`${nextTask.name}をはじめます`)
+      if (status === 'running') {
+        playStartAlert()
+        speak(`${nextTask.name}をはじめます`)
+      }
     }
   }
 
