@@ -11,7 +11,7 @@ interface Props {
 }
 
 export function RoutineEditor({ routine, onBack }: Props) {
-  const { updateRoutine, addTask, updateTask, deleteTask } = useRoutineStore()
+  const { updateRoutine, deleteRoutine, addTask, updateTask, deleteTask } = useRoutineStore()
   const setActiveRoutine = useTimerStore((s) => s.setActiveRoutine)
 
   const [editingName, setEditingName] = useState(false)
@@ -77,6 +77,17 @@ export function RoutineEditor({ routine, onBack }: Props) {
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-2">
+        <button
+          className="text-xs text-red-400 dark:text-red-500 text-right w-full pb-1"
+          onClick={() => {
+            if (confirm(`「${routine.name}」を削除しますか？`)) {
+              deleteRoutine(routine.id)
+              onBack()
+            }
+          }}
+        >
+          このルーティンを削除
+        </button>
         {routine.tasks.length === 0 && (
           <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-4">
             タスクを追加してください

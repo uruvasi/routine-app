@@ -6,6 +6,8 @@ export function SettingsScreen() {
   const { routines, importRoutines } = useRoutineStore()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [importResult, setImportResult] = useState<string | null>(null)
+  const [showImportOptions, setShowImportOptions] = useState(false)
+  const importReplaceRef = useRef(false)
 
   const handleExport = () => {
     const text = exportToMarkdown(routines)
@@ -19,6 +21,13 @@ export function SettingsScreen() {
     URL.revokeObjectURL(url)
   }
 
+  const openFilePicker = (replace: boolean) => {
+    importReplaceRef.current = replace
+    setShowImportOptions(false)
+    setImportResult(null)
+    fileInputRef.current?.click()
+  }
+
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -30,8 +39,12 @@ export function SettingsScreen() {
         setImportResult('読み込めるルーティンがありませんでした')
         return
       }
-      importRoutines(imported)
-      setImportResult(`${imported.length}件のルーティンを追加しました`)
+      importRoutines(imported, importReplaceRef.current)
+      setImportResult(
+        importReplaceRef.current
+          ? `${imported.length}件のルーティンで置き換えました`
+          : `${imported.length}件のルーティンを追加しました`
+      )
     }
     reader.readAsText(file)
     e.target.value = ''
@@ -63,11 +76,27 @@ export function SettingsScreen() {
         </button>
         <button
           className="w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-300 text-left flex justify-between items-center"
-          onClick={() => { setImportResult(null); fileInputRef.current?.click() }}
+          onClick={() => { setShowImportOptions((v) => !v); setImportResult(null) }}
         >
           <span>ルーティンをインポート</span>
           <span className="text-xs text-gray-400">.md</span>
         </button>
+        {showImportOptions && (
+          <div className="px-4 pb-3 flex gap-2">
+            <button
+              className="flex-1 py-1.5 rounded-lg text-xs border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300"
+              onClick={() => openFilePicker(false)}
+            >
+              既存に追加
+            </button>
+            <button
+              className="flex-1 py-1.5 rounded-lg text-xs border border-red-200 dark:border-red-800 text-red-500 dark:text-red-400"
+              onClick={() => openFilePicker(true)}
+            >
+              すべて置き換え
+            </button>
+          </div>
+        )}
         <input
           ref={fileInputRef}
           type="file"
