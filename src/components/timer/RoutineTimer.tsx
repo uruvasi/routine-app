@@ -1,5 +1,6 @@
 import { useTimerStore } from '../../store/timerStore'
 import { useRoutineStore } from '../../store/routineStore'
+import { useAudioAlert } from '../../hooks/useAudioAlert'
 import { CircularTimer } from './CircularTimer'
 import { Button } from '../shared/Button'
 
@@ -11,6 +12,7 @@ export function RoutineTimer() {
     setActiveRoutine, jumpToTask,
   } = useTimerStore()
   const routines = useRoutineStore((s) => s.routines)
+  const { playStartAlert, speak } = useAudioAlert()
 
   const activeRoutine = routines.find((r) => r.id === activeRoutineId)
   const currentTask = activeRoutine?.tasks[currentTaskIndex]
@@ -54,6 +56,8 @@ export function RoutineTimer() {
     if (currentTaskIndex > 0) {
       const prevTask = activeRoutine.tasks[currentTaskIndex - 1]
       jumpToTask(currentTaskIndex - 1, prevTask.duration)
+      playStartAlert()
+      speak(`${prevTask.name}をはじめます`)
     }
   }
 
@@ -61,6 +65,8 @@ export function RoutineTimer() {
     if (currentTaskIndex < totalTasks - 1) {
       const nextTask = activeRoutine.tasks[currentTaskIndex + 1]
       jumpToTask(currentTaskIndex + 1, nextTask.duration)
+      playStartAlert()
+      speak(`${nextTask.name}をはじめます`)
     }
   }
 

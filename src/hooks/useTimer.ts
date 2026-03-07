@@ -11,17 +11,23 @@ export function useTimer() {
   const lastTickRef = useRef<number | null>(null)
   const animFrameRef = useRef<number | null>(null)
   const prevStatusRef = useRef<TimerStatus>('idle')
+  const oneMinSpokenRef = useRef(false)
 
   useEffect(() => {
     const prev = prevStatusRef.current
     prevStatusRef.current = store.status
     if (store.status === 'running' && prev === 'idle') {
+      oneMinSpokenRef.current = false
       playStartAlert()
       if (store.mode === 'routine') {
         const state = useTimerStore.getState()
         const routine = routines.find((r) => r.id === state.activeRoutineId)
         const task = routine?.tasks[state.currentTaskIndex]
         if (task) speak(`${task.name}をはじめます`)
+      }
+      if (store.mode === 'countdown') {
+        const min = store.total / 60
+        speak(`${min}分のタイマーを始めます`)
       }
     }
   }, [store.status])
@@ -63,6 +69,10 @@ export function useTimer() {
         if (current.remaining === 0) {
           handlePhaseEnd(current, routines, playAlert, playStartAlert, speak)
           return
+        }
+        if (current.mode === 'countdown' && current.remaining <= 60 && !oneMinSpokenRef.current) {
+          oneMinSpokenRef.current = true
+          speak('残り1分です')
         }
       }
 
@@ -140,5 +150,6 @@ function handlePhaseEnd(
     return
   }
 
+  if (s.mode === 'countdown') speak('完了しました')
   useTimerStore.getState().finish()
 }
