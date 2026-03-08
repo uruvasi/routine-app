@@ -81,10 +81,6 @@ export function TaskItem({ task, onUpdate, onDelete, dragHandleProps }: Props) {
 
   return (
     <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
-      <div
-        className="w-1 h-8 rounded-full bg-indigo-400 flex-shrink-0 cursor-grab active:cursor-grabbing touch-none"
-        {...dragHandleProps}
-      />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{task.name}</p>
         <p className="text-xs text-gray-400 dark:text-gray-500">{formatDuration(task.duration)}</p>
@@ -101,6 +97,12 @@ export function TaskItem({ task, onUpdate, onDelete, dragHandleProps }: Props) {
       >
         ×
       </button>
+      <div
+        className="text-gray-300 dark:text-gray-600 text-xl px-1 cursor-grab active:cursor-grabbing touch-none select-none"
+        {...dragHandleProps}
+      >
+        ≡
+      </div>
     </div>
   )
 }
