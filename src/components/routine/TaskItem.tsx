@@ -5,6 +5,7 @@ interface Props {
   task: Task
   onUpdate: (name: string, duration: number) => void
   onDelete: () => void
+  dragHandleProps?: React.HTMLAttributes<HTMLDivElement>
 }
 
 function formatDuration(seconds: number) {
@@ -15,7 +16,7 @@ function formatDuration(seconds: number) {
   return `${s}秒`
 }
 
-export function TaskItem({ task, onUpdate, onDelete }: Props) {
+export function TaskItem({ task, onUpdate, onDelete, dragHandleProps }: Props) {
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(task.name)
   const [min, setMin] = useState(String(Math.floor(task.duration / 60)))
@@ -80,7 +81,10 @@ export function TaskItem({ task, onUpdate, onDelete }: Props) {
 
   return (
     <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
-      <div className="w-1 h-8 rounded-full bg-indigo-400 flex-shrink-0" />
+      <div
+        className="w-1 h-8 rounded-full bg-indigo-400 flex-shrink-0 cursor-grab active:cursor-grabbing touch-none"
+        {...dragHandleProps}
+      />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{task.name}</p>
         <p className="text-xs text-gray-400 dark:text-gray-500">{formatDuration(task.duration)}</p>

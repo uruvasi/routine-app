@@ -1,5 +1,21 @@
 import { useState } from 'react'
-import type { Routine } from '../../types'
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import type { Routine, Task } from '../../types'
 import { useRoutineStore } from '../../store/routineStore'
 import { useTimerStore } from '../../store/timerStore'
 import { TaskItem } from './TaskItem'
@@ -11,8 +27,32 @@ interface Props {
   onStartTimer: () => void
 }
 
+function SortableTaskItem({
+  task,
+  onUpdate,
+  onDelete,
+}: {
+  task: Task
+  onUpdate: (name: string, duration: number) => void
+  onDelete: () => void
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: task.id,
+  })
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  }
+  return (
+    <div ref={setNodeRef} style={style}>
+      <TaskItem task={task} onUpdate={onUpdate} onDelete={onDelete} dragHandleProps={{ ...attributes, ...listeners }} />
+    </div>
+  )
+}
+
 export function RoutineEditor({ routine, onBack, onStartTimer }: Props) {
-  const { updateRoutine, deleteRoutine, addTask, updateTask, deleteTask } = useRoutineStore()
+  const { updateRoutine, deleteRoutine, addTask, updateTask, deleteTask, reorderTasks } = useRoutineStore()
   const { setActiveRoutine, start } = useTimerStore()
 
   const [editingName, setEditingName] = useState(false)
@@ -20,6 +60,11 @@ export function RoutineEditor({ routine, onBack, onStartTimer }: Props) {
   const [newTaskName, setNewTaskName] = useState('')
   const [newTaskMin, setNewTaskMin] = useState('5')
   const [newTaskSec, setNewTaskSec] = useState('0')
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
+  )
 
   const saveName = () => {
     if (name.trim()) {
@@ -47,6 +92,14 @@ export function RoutineEditor({ routine, onBack, onStartTimer }: Props) {
       start()
       onStartTimer()
     }
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const oldIndex = routine.tasks.findIndex((t) => t.id === active.id)
+    const newIndex = routine.tasks.findIndex((t) => t.id === over.id)
+    reorderTasks(routine.id, arrayMove(routine.tasks, oldIndex, newIndex))
   }
 
   return (
@@ -96,14 +149,18 @@ export function RoutineEditor({ routine, onBack, onStartTimer }: Props) {
             タスクを追加してください
           </p>
         )}
-        {routine.tasks.map((task) => (
-          <TaskItem
-            key={task.id}
-            task={task}
-            onUpdate={(n, d) => updateTask(routine.id, task.id, n, d)}
-            onDelete={() => deleteTask(routine.id, task.id)}
-          />
-        ))}
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={routine.tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+            {routine.tasks.map((task) => (
+              <SortableTaskItem
+                key={task.id}
+                task={task}
+                onUpdate={(n, d) => updateTask(routine.id, task.id, n, d)}
+                onDelete={() => deleteTask(routine.id, task.id)}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
       </div>
 
       <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800 flex flex-col gap-2">
