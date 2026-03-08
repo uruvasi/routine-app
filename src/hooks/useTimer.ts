@@ -88,7 +88,7 @@ export function useTimer() {
         animFrameRef.current = null
       }
     }
-  }, [store.status, store.mode, store.currentIntervalIndex, store.currentTaskIndex, routines, playAlert, playStartAlert, speak])
+  }, [store.status, store.mode, store.currentTaskIndex, routines, playAlert, playStartAlert, speak])
 }
 
 function handlePhaseEnd(
@@ -99,35 +99,6 @@ function handlePhaseEnd(
   speak: (text: string) => void
 ) {
   playAlert()
-
-  if (s.mode === 'pomodoro') {
-    if (s.pomodoroPhase === 'work') {
-      useTimerStore.getState().nextPhase(s.pomodoroBreakDuration, 'break')
-      playStartAlert()
-    } else {
-      useTimerStore.getState().nextPhase(s.pomodoroWorkDuration, 'work')
-      useTimerStore.setState((prev) => ({ pomodoroCount: prev.pomodoroCount + 1 }))
-      playStartAlert()
-    }
-    return
-  }
-
-  if (s.mode === 'interval') {
-    const nextIndex = s.currentIntervalIndex + 1
-    if (nextIndex < s.intervalPhases.length) {
-      const nextPhase = s.intervalPhases[nextIndex]
-      useTimerStore.setState({
-        currentIntervalIndex: nextIndex,
-        remaining: nextPhase.duration,
-        total: nextPhase.duration,
-        status: 'running',
-      })
-      playStartAlert()
-    } else {
-      useTimerStore.getState().finish()
-    }
-    return
-  }
 
   if (s.mode === 'routine' && s.activeRoutineId) {
     const routine = routines.find((r) => r.id === s.activeRoutineId)

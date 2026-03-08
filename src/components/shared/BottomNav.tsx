@@ -6,7 +6,7 @@ interface Props {
 }
 
 const tabs: { id: NavTab; label: string; icon: string }[] = [
-  { id: 'timer', label: 'タイマー', icon: '⏱' },
+  { id: 'countdown', label: 'タイマー', icon: '⏱' },
   { id: 'routine', label: 'ルーティン', icon: '📋' },
   { id: 'settings', label: '設定', icon: '⚙️' },
 ]

@@ -4,7 +4,11 @@ import { useAudioAlert } from '../../hooks/useAudioAlert'
 import { CircularTimer } from './CircularTimer'
 import { Button } from '../shared/Button'
 
-export function RoutineTimer() {
+interface Props {
+  onEdit: () => void
+}
+
+export function RoutineTimer({ onEdit }: Props) {
   const {
     status, remaining, total,
     activeRoutineId, currentTaskIndex,
@@ -30,7 +34,7 @@ export function RoutineTimer() {
         <p className="text-gray-500 dark:text-gray-400 text-sm">ルーティンを選択してください</p>
         {routines.length === 0 ? (
           <p className="text-gray-400 dark:text-gray-500 text-xs">
-            「ルーティン」タブでルーティンを作成してください
+            ルーティンがまだありません
           </p>
         ) : (
           <div className="flex flex-col gap-2 w-full max-w-xs">
@@ -46,6 +50,12 @@ export function RoutineTimer() {
             ))}
           </div>
         )}
+        <button
+          onClick={onEdit}
+          className="text-sm text-indigo-500 dark:text-indigo-400"
+        >
+          ルーティンを編集
+        </button>
       </div>
     )
   }
@@ -96,12 +106,20 @@ export function RoutineTimer() {
         <Button variant="secondary" onClick={handleNext} disabled={currentTaskIndex === totalTasks - 1}>▶</Button>
       </div>
 
-      <button
-        onClick={() => useTimerStore.setState({ activeRoutineId: null, status: 'idle' })}
-        className="text-sm text-indigo-500 dark:text-indigo-400"
-      >
-        ルーティン変更
-      </button>
+      <div className="flex gap-4">
+        <button
+          onClick={() => useTimerStore.setState({ activeRoutineId: null, status: 'idle' })}
+          className="text-sm text-indigo-500 dark:text-indigo-400"
+        >
+          ルーティン変更
+        </button>
+        <button
+          onClick={onEdit}
+          className="text-sm text-indigo-500 dark:text-indigo-400"
+        >
+          編集
+        </button>
+      </div>
 
       <div className="w-full max-w-xs flex flex-col gap-1">
         {activeRoutine.tasks.map((task, i) => (
