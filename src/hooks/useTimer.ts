@@ -1,8 +1,12 @@
 import { useEffect, useRef } from 'react'
 import { useTimerStore } from '../store/timerStore'
 import { useRoutineStore } from '../store/routineStore'
+import { useSettingsStore } from '../store/settingsStore'
+import { translations } from '../i18n/translations'
 import { useAudioAlert } from './useAudioAlert'
 import type { TimerStatus } from '../types'
+
+const getT = () => translations[useSettingsStore.getState().lang]
 
 export function useTimer() {
   const store = useTimerStore()
@@ -23,11 +27,11 @@ export function useTimer() {
         const state = useTimerStore.getState()
         const routine = routines.find((r) => r.id === state.activeRoutineId)
         const task = routine?.tasks[state.currentTaskIndex]
-        if (task) speak(`${task.name}をはじめます`)
+        if (task) speak(getT().speakTaskStart(task.name))
       }
       if (store.mode === 'countdown') {
         const min = store.total / 60
-        speak(`${min}分のタイマーを始めます`)
+        speak(getT().speakTimerStart(min))
       }
     }
   }, [store.status])
@@ -72,7 +76,7 @@ export function useTimer() {
         }
         if (current.mode === 'countdown' && current.remaining <= 60 && !oneMinSpokenRef.current) {
           oneMinSpokenRef.current = true
-          speak('残り1分です')
+          speak(getT().speakOneMinLeft)
         }
       }
 
@@ -113,7 +117,7 @@ function handlePhaseEnd(
           status: 'running',
         })
         playStartAlert()
-        speak(`${nextTask.name}をはじめます`)
+        speak(getT().speakTaskStart(nextTask.name))
       } else {
         useTimerStore.getState().finish()
       }
@@ -121,6 +125,6 @@ function handlePhaseEnd(
     return
   }
 
-  if (s.mode === 'countdown') speak('完了しました')
+  if (s.mode === 'countdown') speak(getT().speakDone)
   useTimerStore.getState().finish()
 }

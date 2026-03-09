@@ -16,6 +16,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useRoutineStore } from '../../store/routineStore'
+import { useTranslation } from '../../hooks/useTranslation'
 import { RoutineEditor } from './RoutineEditor'
 import { Button } from '../shared/Button'
 import type { Routine } from '../../types'
@@ -27,22 +28,23 @@ interface Props {
 function SortableRoutineItem({
   routine,
   totalSeconds,
-  formatTotal,
   onSelect,
 }: {
   routine: Routine
   totalSeconds: number
-  formatTotal: (s: number) => string
   onSelect: () => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: routine.id,
   })
+  const { t } = useTranslation()
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.4 : 1,
   }
+  const m = Math.floor(totalSeconds / 60)
+  const s = totalSeconds % 60
   return (
     <div
       ref={setNodeRef}
@@ -53,8 +55,8 @@ function SortableRoutineItem({
         <p className="font-medium text-gray-800 dark:text-gray-100 truncate">{routine.name}</p>
         <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
           {routine.tasks.length > 0
-            ? `${routine.tasks.length}タスク · ${formatTotal(totalSeconds)}`
-            : 'タスクなし'}
+            ? t.taskCountLabel(routine.tasks.length, t.totalTimeStr(m, s))
+            : t.noTasks}
         </p>
       </div>
       <div
@@ -70,6 +72,7 @@ function SortableRoutineItem({
 
 export function RoutineList({ onNavigateToTimer }: Props) {
   const { routines, addRoutine, reorderRoutines } = useRoutineStore()
+  const { t } = useTranslation()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [newName, setNewName] = useState('')
   const [adding, setAdding] = useState(false)
@@ -100,15 +103,7 @@ export function RoutineList({ onNavigateToTimer }: Props) {
     }
   }
 
-  const calcTotal = (routine: Routine) => routine.tasks.reduce((sum, t) => sum + t.duration, 0)
-
-  const formatTotal = (seconds: number) => {
-    const m = Math.floor(seconds / 60)
-    const s = seconds % 60
-    if (m > 0 && s > 0) return `合計 ${m}分${s}秒`
-    if (m > 0) return `合計 ${m}分`
-    return `合計 ${s}秒`
-  }
+  const calcTotal = (routine: Routine) => routine.tasks.reduce((sum, task) => sum + task.duration, 0)
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
@@ -121,8 +116,8 @@ export function RoutineList({ onNavigateToTimer }: Props) {
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800">
-        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">ルーティン</h2>
-        <Button size="sm" onClick={() => setAdding(true)}>+ 新規</Button>
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{t.routinesTitle}</h2>
+        <Button size="sm" onClick={() => setAdding(true)}>{t.newRoutine}</Button>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-3">
@@ -131,7 +126,7 @@ export function RoutineList({ onNavigateToTimer }: Props) {
             <input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              placeholder="ルーティン名"
+              placeholder={t.routineNamePlaceholder}
               className="flex-1 px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
               autoFocus
               onKeyDown={(e) => {
@@ -139,14 +134,14 @@ export function RoutineList({ onNavigateToTimer }: Props) {
                 if (e.key === 'Escape') setAdding(false)
               }}
             />
-            <Button size="sm" onClick={handleAdd}>作成</Button>
+            <Button size="sm" onClick={handleAdd}>{t.create}</Button>
             <Button size="sm" variant="secondary" onClick={() => setAdding(false)}>×</Button>
           </div>
         )}
 
         {routines.length === 0 && !adding && (
           <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-8">
-            ルーティンがありません
+            {t.noRoutinesList}
           </p>
         )}
 
@@ -157,7 +152,6 @@ export function RoutineList({ onNavigateToTimer }: Props) {
                 key={routine.id}
                 routine={routine}
                 totalSeconds={calcTotal(routine)}
-                formatTotal={formatTotal}
                 onSelect={() => setSelectedId(routine.id)}
               />
             ))}

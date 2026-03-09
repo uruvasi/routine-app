@@ -18,6 +18,7 @@ import { CSS } from '@dnd-kit/utilities'
 import type { Routine, Task } from '../../types'
 import { useRoutineStore } from '../../store/routineStore'
 import { useTimerStore } from '../../store/timerStore'
+import { useTranslation } from '../../hooks/useTranslation'
 import { TaskItem } from './TaskItem'
 import { Button } from '../shared/Button'
 
@@ -54,6 +55,7 @@ function SortableTaskItem({
 export function RoutineEditor({ routine, onBack, onStartTimer }: Props) {
   const { updateRoutine, deleteRoutine, addTask, updateTask, deleteTask, reorderTasks } = useRoutineStore()
   const { setActiveRoutine, start } = useTimerStore()
+  const { t } = useTranslation()
 
   const [editingName, setEditingName] = useState(false)
   const [name, setName] = useState(routine.name)
@@ -106,7 +108,7 @@ export function RoutineEditor({ routine, onBack, onStartTimer }: Props) {
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 dark:border-gray-800">
         <button onClick={onBack} className="text-indigo-500 dark:text-indigo-400 text-sm">
-          ← 戻る
+          {t.back}
         </button>
         {editingName ? (
           <input
@@ -127,7 +129,7 @@ export function RoutineEditor({ routine, onBack, onStartTimer }: Props) {
         )}
         {routine.tasks.length > 0 && (
           <Button size="sm" onClick={handleStartTimer}>
-            実行
+            {t.run}
           </Button>
         )}
       </div>
@@ -136,17 +138,17 @@ export function RoutineEditor({ routine, onBack, onStartTimer }: Props) {
         <button
           className="text-xs text-red-400 dark:text-red-500 text-right w-full pb-1"
           onClick={() => {
-            if (confirm(`「${routine.name}」を削除しますか？`)) {
+            if (confirm(t.deleteRoutineConfirm(routine.name))) {
               deleteRoutine(routine.id)
               onBack()
             }
           }}
         >
-          このルーティンを削除
+          {t.deleteThisRoutine}
         </button>
         {routine.tasks.length === 0 && (
           <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-4">
-            タスクを追加してください
+            {t.addTasksPrompt}
           </p>
         )}
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -167,7 +169,7 @@ export function RoutineEditor({ routine, onBack, onStartTimer }: Props) {
         <input
           value={newTaskName}
           onChange={(e) => setNewTaskName(e.target.value)}
-          placeholder="新しいタスク名"
+          placeholder={t.newTaskNamePlaceholder}
           className="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
           onKeyDown={(e) => e.key === 'Enter' && handleAddTask()}
         />
@@ -179,7 +181,7 @@ export function RoutineEditor({ routine, onBack, onStartTimer }: Props) {
             onChange={(e) => setNewTaskMin(e.target.value)}
             className="w-14 px-2 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-center"
           />
-          <span className="text-sm text-gray-500">分</span>
+          <span className="text-sm text-gray-500">{t.minUnit}</span>
           <input
             type="number"
             min="0"
@@ -188,9 +190,9 @@ export function RoutineEditor({ routine, onBack, onStartTimer }: Props) {
             onChange={(e) => setNewTaskSec(e.target.value)}
             className="w-14 px-2 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-center"
           />
-          <span className="text-sm text-gray-500">秒</span>
+          <span className="text-sm text-gray-500">{t.secUnit}</span>
           <Button size="sm" onClick={handleAddTask} className="flex-1">
-            追加
+            {t.add}
           </Button>
         </div>
       </div>

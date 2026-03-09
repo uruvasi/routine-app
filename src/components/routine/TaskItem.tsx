@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { Task } from '../../types'
+import { useTranslation } from '../../hooks/useTranslation'
 
 interface Props {
   task: Task
@@ -8,15 +9,16 @@ interface Props {
   dragHandleProps?: React.HTMLAttributes<HTMLDivElement>
 }
 
-function formatDuration(seconds: number) {
+function formatDuration(seconds: number, minUnit: string, secUnit: string) {
   const m = Math.floor(seconds / 60)
   const s = seconds % 60
-  if (m > 0 && s > 0) return `${m}分${s}秒`
-  if (m > 0) return `${m}分`
-  return `${s}秒`
+  if (m > 0 && s > 0) return `${m}${minUnit}${s}${secUnit}`
+  if (m > 0) return `${m}${minUnit}`
+  return `${s}${secUnit}`
 }
 
 export function TaskItem({ task, onUpdate, onDelete, dragHandleProps }: Props) {
+  const { t } = useTranslation()
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(task.name)
   const [min, setMin] = useState(String(Math.floor(task.duration / 60)))
@@ -39,7 +41,7 @@ export function TaskItem({ task, onUpdate, onDelete, dragHandleProps }: Props) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="w-full px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
-          placeholder="タスク名"
+          placeholder={t.taskNamePlaceholder}
           autoFocus
         />
         <div className="flex gap-2 items-center">
@@ -50,7 +52,7 @@ export function TaskItem({ task, onUpdate, onDelete, dragHandleProps }: Props) {
             onChange={(e) => setMin(e.target.value)}
             className="w-16 px-2 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-center"
           />
-          <span className="text-sm text-gray-500">分</span>
+          <span className="text-sm text-gray-500">{t.minUnit}</span>
           <input
             type="number"
             min="0"
@@ -59,20 +61,20 @@ export function TaskItem({ task, onUpdate, onDelete, dragHandleProps }: Props) {
             onChange={(e) => setSec(e.target.value)}
             className="w-16 px-2 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-center"
           />
-          <span className="text-sm text-gray-500">秒</span>
+          <span className="text-sm text-gray-500">{t.secUnit}</span>
         </div>
         <div className="flex gap-2">
           <button
             onClick={save}
             className="flex-1 py-1.5 text-sm bg-indigo-500 text-white rounded-lg"
           >
-            保存
+            {t.save}
           </button>
           <button
             onClick={() => setEditing(false)}
             className="flex-1 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg"
           >
-            キャンセル
+            {t.cancel}
           </button>
         </div>
       </div>
@@ -83,13 +85,13 @@ export function TaskItem({ task, onUpdate, onDelete, dragHandleProps }: Props) {
     <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{task.name}</p>
-        <p className="text-xs text-gray-400 dark:text-gray-500">{formatDuration(task.duration)}</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500">{formatDuration(task.duration, t.minUnit, t.secUnit)}</p>
       </div>
       <button
         onClick={() => setEditing(true)}
         className="text-gray-400 dark:text-gray-500 text-sm px-2 py-1"
       >
-        編集
+        {t.edit}
       </button>
       <button
         onClick={onDelete}

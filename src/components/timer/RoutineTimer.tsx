@@ -1,6 +1,7 @@
 import { useTimerStore } from '../../store/timerStore'
 import { useRoutineStore } from '../../store/routineStore'
 import { useAudioAlert } from '../../hooks/useAudioAlert'
+import { useTranslation } from '../../hooks/useTranslation'
 import { CircularTimer } from './CircularTimer'
 import { Button } from '../shared/Button'
 
@@ -17,6 +18,7 @@ export function RoutineTimer({ onEdit }: Props) {
   } = useTimerStore()
   const routines = useRoutineStore((s) => s.routines)
   const { playStartAlert, speak } = useAudioAlert()
+  const { t } = useTranslation()
 
   const activeRoutine = routines.find((r) => r.id === activeRoutineId)
   const currentTask = activeRoutine?.tasks[currentTaskIndex]
@@ -31,10 +33,10 @@ export function RoutineTimer({ onEdit }: Props) {
   if (!activeRoutine || activeRoutine.tasks.length === 0) {
     return (
       <div className="flex flex-col items-center gap-4 py-8 px-4">
-        <p className="text-gray-500 dark:text-gray-400 text-sm">ルーティンを選択してください</p>
+        <p className="text-gray-500 dark:text-gray-400 text-sm">{t.selectRoutine}</p>
         {routines.length === 0 ? (
           <p className="text-gray-400 dark:text-gray-500 text-xs">
-            ルーティンがまだありません
+            {t.noRoutinesYet}
           </p>
         ) : (
           <div className="flex flex-col gap-2 w-full max-w-xs">
@@ -45,7 +47,7 @@ export function RoutineTimer({ onEdit }: Props) {
                 onClick={() => handleSelectRoutine(r.id)}
                 className="w-full text-left"
               >
-                {r.name} ({r.tasks.length}タスク)
+                {r.name} ({t.taskCountLabel(r.tasks.length, '').split(' · ')[0]})
               </Button>
             ))}
           </div>
@@ -54,7 +56,7 @@ export function RoutineTimer({ onEdit }: Props) {
           onClick={onEdit}
           className="text-sm text-indigo-500 dark:text-indigo-400"
         >
-          ルーティンを編集
+          {t.editRoutines}
         </button>
       </div>
     )
@@ -68,7 +70,7 @@ export function RoutineTimer({ onEdit }: Props) {
       jumpToTask(currentTaskIndex - 1, prevTask.duration)
       if (status === 'running') {
         playStartAlert()
-        speak(`${prevTask.name}をはじめます`)
+        speak(t.speakTaskStart(prevTask.name))
       }
     }
   }
@@ -79,7 +81,7 @@ export function RoutineTimer({ onEdit }: Props) {
       jumpToTask(currentTaskIndex + 1, nextTask.duration)
       if (status === 'running') {
         playStartAlert()
-        speak(`${nextTask.name}をはじめます`)
+        speak(t.speakTaskStart(nextTask.name))
       }
     }
   }
@@ -96,13 +98,13 @@ export function RoutineTimer({ onEdit }: Props) {
       <div className="flex items-center gap-3">
         <Button variant="secondary" onClick={handlePrev} disabled={currentTaskIndex === 0}>◀</Button>
         {status === 'idle' || status === 'finished' ? (
-          <Button size="lg" onClick={start}>スタート</Button>
+          <Button size="lg" onClick={start}>{t.start}</Button>
         ) : status === 'running' ? (
-          <Button size="lg" variant="secondary" onClick={pause}>一時停止</Button>
+          <Button size="lg" variant="secondary" onClick={pause}>{t.pause}</Button>
         ) : (
-          <Button size="lg" onClick={start}>再開</Button>
+          <Button size="lg" onClick={start}>{t.resume}</Button>
         )}
-        <Button size="lg" variant="secondary" onClick={reset}>リセット</Button>
+        <Button size="lg" variant="secondary" onClick={reset}>{t.reset}</Button>
         <Button variant="secondary" onClick={handleNext} disabled={currentTaskIndex === totalTasks - 1}>▶</Button>
       </div>
 
@@ -111,13 +113,13 @@ export function RoutineTimer({ onEdit }: Props) {
           onClick={() => useTimerStore.setState({ activeRoutineId: null, status: 'idle' })}
           className="text-sm text-indigo-500 dark:text-indigo-400"
         >
-          ルーティン変更
+          {t.changeRoutine}
         </button>
         <button
           onClick={onEdit}
           className="text-sm text-indigo-500 dark:text-indigo-400"
         >
-          編集
+          {t.edit}
         </button>
       </div>
 
@@ -134,7 +136,7 @@ export function RoutineTimer({ onEdit }: Props) {
             }`}
           >
             <span>{task.name}</span>
-            <span className="text-xs">{formatDuration(task.duration)}</span>
+            <span className="text-xs">{formatDuration(task.duration, t.minUnit, t.secUnit)}</span>
           </div>
         ))}
       </div>
@@ -142,10 +144,10 @@ export function RoutineTimer({ onEdit }: Props) {
   )
 }
 
-function formatDuration(seconds: number) {
+function formatDuration(seconds: number, minUnit: string, secUnit: string) {
   const m = Math.floor(seconds / 60)
   const s = seconds % 60
-  if (m > 0 && s > 0) return `${m}分${s}秒`
-  if (m > 0) return `${m}分`
-  return `${s}秒`
+  if (m > 0 && s > 0) return `${m}${minUnit}${s}${secUnit}`
+  if (m > 0) return `${m}${minUnit}`
+  return `${s}${secUnit}`
 }

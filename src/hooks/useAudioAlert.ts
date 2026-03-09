@@ -1,4 +1,6 @@
 import { useCallback, useRef } from 'react'
+import { useSettingsStore } from '../store/settingsStore'
+import { translations } from '../i18n/translations'
 
 export function useAudioAlert() {
   const ctxRef = useRef<AudioContext | null>(null)
@@ -50,7 +52,7 @@ export function useAudioAlert() {
     if (!window.speechSynthesis) return
     speechSynthesis.cancel()
     const u = new SpeechSynthesisUtterance(text)
-    u.lang = 'ja-JP'
+    u.lang = translations[useSettingsStore.getState().lang].speechLang
     speechSynthesis.speak(u)
   }, [])
 
