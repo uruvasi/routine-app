@@ -78,7 +78,7 @@ npm run build  # 本番ビルド（dist/ に PWA ファイル生成）
 
 - バージョンは `package.json` の `version` を管理。デプロイごとに手動で上げる
 - `vite.config.ts` で `__APP_VERSION__` としてビルド時に埋め込み、AppHeader に表示
-- 現在: **v0.6.2**
+- 現在: **v0.7.0**
 
 ---
 
@@ -126,20 +126,81 @@ npm run build  # 本番ビルド（dist/ に PWA ファイル生成）
 
 ---
 
+### 2026-03-09 — セッション4: 多言語対応（i18n）
+
+1. **翻訳システム実装** (v0.7.0)
+   - `src/i18n/translations.ts` — 全文字列の `ja` / `en` 翻訳定義（`Translation` 型 + `translations` レコード）
+   - `src/store/settingsStore.ts` — 言語設定を localStorage に永続化（`settings-store` キー）
+   - `src/hooks/useTranslation.ts` — `useTranslation()` フック（`{ t, lang }` を返す）
+
+2. **全コンポーネントの i18n 適用**
+   - `CountdownTimer` / `RoutineTimer` / `RoutineList` / `RoutineEditor` / `TaskItem` / `SettingsScreen` の全ハードコード文字列を `t.*` に置換
+   - `formatDuration` 関数の単位（分/秒 → `t.minUnit`/`t.secUnit`）も言語対応
+   - ルーティン一覧の「合計時間」表示も `t.totalTimeStr` / `t.taskCountLabel` に統合
+
+3. **音声読み上げの言語追従**
+   - `useAudioAlert.ts` の `speak()` が呼び出し時点の言語設定を参照
+   - `useTimer.ts` の全 speak 呼び出しを `getT().speakXxx(...)` に変更
+
+4. **設定画面に言語切替 UI 追加**
+   - 「日本語 / English」トグルボタン、選択中はインディゴ色でハイライト
+
+**現在の状態:** v0.7.0、main にマージ済み、Cloudflare Pages にデプロイ済み。
+
+---
+
 ## 今後やりたいこと（バックログ）
 
-### 優先度高
-- **多言語対応（日本語 / 英語）** — i18n 対応
+### 優先度低（しばらくテストしながら判断）
+- **認証・デバイス間連携** — localStorage 構成でしばらく運用。必要になったら検討
 
-### 優先度低（シンプルな現状でテスト後に判断）
-- **認証・デバイス間連携** — localStorage 構成でしばらくテスト予定。面倒になる可能性あり
-- **Apple Watch 通知** — タスク完了・切り替え時に通知を飛ばしたい
+---
 
-### 難しいが検討中
-- **バックグラウンド動作** — PWA はバックグラウンドでのタイマー継続が難しい（Service Worker + Background Sync の調査が必要）
+## アーキテクチャ上の重要課題
+
+### バックグラウンド動作 + Apple Watch 通知
+
+**目標:** 画面オフ中もタイマーを継続し、タスク完了時に iPhone & Watch へ通知する
+
+#### iOS PWA の制約（確認済み）
+
+| 技術 | iOS PWA |
+|---|---|
+| `setInterval` / `rAF` | バックグラウンドで停止 |
+| Web Workers | 同様に停止 |
+| Service Worker | キャッシュは動くがタイマーループは不可 |
+| Background Sync API | iOS **未サポート** |
+| Push Notifications | iOS 16.4以降・ホーム画面追加PWAのみ。**サーバー必須** |
+| AudioContext | フォアグラウンドのみ動作 |
+
+**現在の対応:** 開始時刻ベースで戻ったとき残り時間を再計算（Page Visibility API）。
+完了通知・完了音はバックグラウンドでは鳴らない。
+
+#### 選択肢
+
+**第1案: ネイティブアプリ化（本命）**
+- Swift (SwiftUI) または React Native で実装
+- バックグラウンドタイマー（`BGTaskScheduler` / `UserNotifications`）が使える
+- watchOS コンパニオンアプリで Watch 通知・表示も実現可能
+- App Store 審査が必要
+- **Watch 連携まで視野に入れるなら、最終的にはここに行き着く**
+
+**第2案: サーバー側タイマー + Push 通知（次点）**
+- タイマー開始をサーバーに登録 → 時間になったらサーバーが Web Push 送信
+- iOS 16.4以降のPWA（ホーム画面追加）はPush Notifications対応
+- Watch への通知はiPhone経由のミラーリング通知として届く可能性あり
+- サーバー構築・運用コストが発生
+- Watch 専用 UI は作れない（通知のみ）
+- **PWA のまま最小コストで通知だけ実現したい場合の選択肢**
+
+#### 判断メモ
+- Watch 連携まで本気でやるならネイティブ化一択
+- ただし実装コストが大きく跳ね上がる（Swift 学習 or RN 移行）
+- まずは現行 PWA でユーザビリティを磨き、必要性が確定したらネイティブ化を検討
 
 ---
 
 ## 未解決・要確認
 
 - バックグラウンド時のタイマー精度（Page Visibility API で一定対応済みだが完全ではない）
+- ネイティブ化するなら Swift か React Native か（スキルセット・保守性の観点で要検討）
