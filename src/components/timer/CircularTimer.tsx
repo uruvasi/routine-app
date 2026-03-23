@@ -55,7 +55,6 @@ export function CircularTimer({ remaining, total, size = 280, label, sublabel }:
             style={{ fontSize: size >= 280 ? '3.5rem' : '2.5rem' }}
           >
             {formatTime(remaining)}
-            <span style={{ color: 'rgba(94,92,230,0.35)', fontSize: '0.55em' }}>.00</span>
           </span>
           {label && (
             <span className="text-xs uppercase tracking-[0.2em] text-outline mt-2 text-center px-4 truncate max-w-full">

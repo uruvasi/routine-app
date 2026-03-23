@@ -25,7 +25,7 @@ const sizeClass = {
 export function Button({ variant = 'primary', size = 'md', className = '', children, ...props }: Props) {
   return (
     <button
-      className={`font-headline font-semibold transition-all active:scale-95 select-none ${variantClass[variant]} ${sizeClass[size]} ${className}`}
+      className={`font-headline font-semibold transition-all active:scale-95 select-none whitespace-nowrap ${variantClass[variant]} ${sizeClass[size]} ${className}`}
       style={
         variant === 'primary'
           ? { boxShadow: '0 8px 32px rgba(68,65,204,0.15)' }
