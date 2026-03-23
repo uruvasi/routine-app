@@ -18,7 +18,6 @@ import { CSS } from '@dnd-kit/utilities'
 import { useRoutineStore } from '../../store/routineStore'
 import { useTranslation } from '../../hooks/useTranslation'
 import { RoutineEditor } from './RoutineEditor'
-import { Button } from '../shared/Button'
 import type { Routine } from '../../types'
 
 interface Props {
@@ -45,22 +44,31 @@ function SortableRoutineItem({
   }
   const m = Math.floor(totalSeconds / 60)
   const s = totalSeconds % 60
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700"
+      className="flex items-center gap-3 px-4 py-4 rounded-2xl bg-surface-container-low active:scale-[0.98] transition-all"
     >
       <div className="flex-1 min-w-0 cursor-pointer" onClick={onSelect}>
-        <p className="font-medium text-gray-800 dark:text-gray-100 truncate">{routine.name}</p>
-        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+        <p className="font-headline font-semibold text-on-surface truncate">{routine.name}</p>
+        <p className="text-xs text-outline mt-0.5">
           {routine.tasks.length > 0
             ? t.taskCountLabel(routine.tasks.length, t.totalTimeStr(m, s))
             : t.noTasks}
         </p>
       </div>
+      <button
+        onClick={onSelect}
+        className="w-9 h-9 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant flex-shrink-0"
+      >
+        <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+          <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z" />
+        </svg>
+      </button>
       <div
-        className="text-gray-300 dark:text-gray-600 text-xl px-1 cursor-grab active:cursor-grabbing touch-none select-none"
+        className="text-outline text-lg px-1 cursor-grab active:cursor-grabbing touch-none select-none flex-shrink-0"
         {...attributes}
         {...listeners}
       >
@@ -115,32 +123,44 @@ export function RoutineList({ onNavigateToTimer }: Props) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800">
-        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{t.routinesTitle}</h2>
-        <Button size="sm" onClick={() => setAdding(true)}>{t.newRoutine}</Button>
+      <div className="px-5 pt-4 pb-2 flex-shrink-0">
+        <p className="text-xs uppercase tracking-widest text-outline font-headline mb-1">
+          Your Library
+        </p>
+        <h2 className="font-headline font-bold text-2xl text-on-surface">{t.routinesTitle}</h2>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-3">
+      <div className="flex-1 overflow-y-auto px-5 py-3 flex flex-col gap-3">
         {adding && (
-          <div className="flex gap-2">
+          <div className="flex gap-2 p-3 rounded-2xl bg-surface-container-low">
             <input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder={t.routineNamePlaceholder}
-              className="flex-1 px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+              className="flex-1 bg-transparent text-sm font-headline text-on-surface outline-none placeholder:text-outline"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleAdd()
                 if (e.key === 'Escape') setAdding(false)
               }}
             />
-            <Button size="sm" onClick={handleAdd}>{t.create}</Button>
-            <Button size="sm" variant="secondary" onClick={() => setAdding(false)}>×</Button>
+            <button
+              onClick={handleAdd}
+              className="px-4 py-1.5 rounded-full bg-primary-container text-on-primary text-sm font-headline font-semibold"
+            >
+              {t.create}
+            </button>
+            <button
+              onClick={() => setAdding(false)}
+              className="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant"
+            >
+              ×
+            </button>
           </div>
         )}
 
         {routines.length === 0 && !adding && (
-          <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-8">
+          <p className="text-sm text-outline text-center py-8 font-headline">
             {t.noRoutinesList}
           </p>
         )}
@@ -157,6 +177,19 @@ export function RoutineList({ onNavigateToTimer }: Props) {
             ))}
           </SortableContext>
         </DndContext>
+
+        {/* Create new routine button */}
+        {!adding && (
+          <button
+            onClick={() => setAdding(true)}
+            className="flex items-center justify-center gap-2 py-4 rounded-2xl border-2 border-dashed border-outline-variant text-on-surface-variant font-headline font-medium text-sm active:scale-[0.98] transition-all mt-1"
+          >
+            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+            </svg>
+            {t.newRoutine}
+          </button>
+        )}
       </div>
     </div>
   )

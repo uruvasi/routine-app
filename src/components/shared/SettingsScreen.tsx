@@ -55,69 +55,92 @@ export function SettingsScreen() {
   }
 
   return (
-    <div className="flex flex-col h-full px-4 py-6 gap-4">
-      <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{t.settingsTitle}</h2>
+    <div className="flex flex-col h-full overflow-y-auto px-5 py-6 gap-5">
+      <div>
+        <p className="text-xs uppercase tracking-widest text-outline font-headline mb-1">Fine-tune your experience</p>
+        <h2 className="font-headline font-bold text-2xl text-on-surface">{t.settingsTitle}</h2>
+      </div>
 
-      <div className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
-        <div className="px-4 py-3 flex justify-between items-center">
-          <span className="text-sm text-gray-700 dark:text-gray-300">{t.language}</span>
-          <div className="flex gap-1">
+      {/* General settings */}
+      <div className="flex flex-col gap-3">
+        {/* Language */}
+        <div className="flex items-center justify-between px-4 py-4 rounded-2xl bg-surface-container-low">
+          <span className="text-sm font-headline font-medium text-on-surface">{t.language}</span>
+          <div className="flex gap-1 bg-surface-container-highest rounded-full p-0.5">
             <button
               onClick={() => setLang('ja')}
-              className={`px-3 py-1 rounded-lg text-sm ${lang === 'ja' ? 'bg-indigo-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}
+              className={`px-3 py-1.5 rounded-full text-sm font-headline font-medium transition-all ${
+                lang === 'ja'
+                  ? 'bg-primary-container text-on-primary'
+                  : 'text-on-surface-variant'
+              }`}
             >
               日本語
             </button>
             <button
               onClick={() => setLang('en')}
-              className={`px-3 py-1 rounded-lg text-sm ${lang === 'en' ? 'bg-indigo-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}
+              className={`px-3 py-1.5 rounded-full text-sm font-headline font-medium transition-all ${
+                lang === 'en'
+                  ? 'bg-primary-container text-on-primary'
+                  : 'text-on-surface-variant'
+              }`}
             >
               English
             </button>
           </div>
         </div>
-        <div className="px-4 py-3 flex justify-between items-center">
-          <span className="text-sm text-gray-700 dark:text-gray-300">{t.versionLabel}</span>
-          <span className="text-sm text-gray-400">{__APP_VERSION__}</span>
+
+        {/* Version */}
+        <div className="flex items-center justify-between px-4 py-4 rounded-2xl bg-surface-container-low">
+          <span className="text-sm font-headline font-medium text-on-surface">{t.versionLabel}</span>
+          <span className="text-sm text-primary font-headline font-semibold">{__APP_VERSION__}</span>
         </div>
-        <div className="px-4 py-3 flex justify-between items-center">
-          <span className="text-sm text-gray-700 dark:text-gray-300">{t.dataStorageLabel}</span>
-          <span className="text-sm text-gray-400">{t.dataStorageValue}</span>
+
+        {/* Storage */}
+        <div className="flex items-center justify-between px-4 py-4 rounded-2xl bg-surface-container-low">
+          <span className="text-sm font-headline font-medium text-on-surface">{t.dataStorageLabel}</span>
+          <span className="text-sm text-outline font-headline">{t.dataStorageValue}</span>
         </div>
       </div>
 
-      <div className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
+      {/* Data section */}
+      <div className="flex flex-col gap-3">
+        <p className="text-xs uppercase tracking-widest text-outline font-headline px-1">Data</p>
+
         <button
-          className="w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-300 text-left flex justify-between items-center"
+          className="flex items-center justify-between px-4 py-4 rounded-2xl bg-surface-container-low active:scale-[0.98] transition-all"
           onClick={handleExport}
           disabled={routines.length === 0}
         >
-          <span>{t.exportRoutines}</span>
-          <span className="text-xs text-gray-400">.md</span>
+          <span className="text-sm font-headline font-medium text-on-surface">{t.exportRoutines}</span>
+          <span className="text-xs text-outline font-headline">.md</span>
         </button>
+
         <button
-          className="w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-300 text-left flex justify-between items-center"
+          className="flex items-center justify-between px-4 py-4 rounded-2xl bg-surface-container-low active:scale-[0.98] transition-all"
           onClick={() => { setShowImportOptions((v) => !v); setImportResult(null) }}
         >
-          <span>{t.importRoutines}</span>
-          <span className="text-xs text-gray-400">.md</span>
+          <span className="text-sm font-headline font-medium text-on-surface">{t.importRoutines}</span>
+          <span className="text-xs text-outline font-headline">.md</span>
         </button>
+
         {showImportOptions && (
-          <div className="px-4 pb-3 flex gap-2">
+          <div className="flex gap-2 px-1">
             <button
-              className="flex-1 py-1.5 rounded-lg text-xs border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300"
+              className="flex-1 py-2.5 rounded-full text-sm font-headline font-medium bg-surface-container-highest text-on-surface-variant active:scale-[0.98] transition-all"
               onClick={() => openFilePicker(false)}
             >
               {t.importAdd}
             </button>
             <button
-              className="flex-1 py-1.5 rounded-lg text-xs border border-red-200 dark:border-red-800 text-red-500 dark:text-red-400"
+              className="flex-1 py-2.5 rounded-full text-sm font-headline font-medium bg-red-50 text-red-500 active:scale-[0.98] transition-all"
               onClick={() => openFilePicker(true)}
             >
               {t.importReplace}
             </button>
           </div>
         )}
+
         <input
           ref={fileInputRef}
           type="file"
@@ -128,12 +151,14 @@ export function SettingsScreen() {
       </div>
 
       {importResult && (
-        <p className="text-sm text-center text-indigo-500 dark:text-indigo-400">{importResult}</p>
+        <p className="text-sm text-center text-primary font-headline">{importResult}</p>
       )}
 
-      <div className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+      {/* Danger zone */}
+      <div>
+        <p className="text-xs uppercase tracking-widest text-outline font-headline px-1 mb-3">Danger Zone</p>
         <button
-          className="w-full px-4 py-3 text-sm text-red-500 text-left"
+          className="w-full flex items-center justify-between px-4 py-4 rounded-2xl bg-red-50 active:scale-[0.98] transition-all"
           onClick={() => {
             if (confirm(t.resetConfirm)) {
               localStorage.clear()
@@ -141,7 +166,10 @@ export function SettingsScreen() {
             }
           }}
         >
-          {t.resetData}
+          <span className="text-sm font-headline font-medium text-red-500">{t.resetData}</span>
+          <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-red-400">
+            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+          </svg>
         </button>
       </div>
     </div>

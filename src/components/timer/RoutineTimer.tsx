@@ -32,30 +32,34 @@ export function RoutineTimer({ onEdit }: Props) {
 
   if (!activeRoutine || activeRoutine.tasks.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-4 py-8 px-4">
-        <p className="text-gray-500 dark:text-gray-400 text-sm">{t.selectRoutine}</p>
+      <div className="flex flex-col h-full overflow-y-auto px-5 py-6 gap-4">
+        <p className="text-on-surface-variant text-sm font-headline">{t.selectRoutine}</p>
         {routines.length === 0 ? (
-          <p className="text-gray-400 dark:text-gray-500 text-xs">
-            {t.noRoutinesYet}
-          </p>
+          <p className="text-outline text-xs">{t.noRoutinesYet}</p>
         ) : (
-          <div className="flex flex-col gap-2 w-full max-w-xs">
+          <div className="flex flex-col gap-3">
             {routines.map((r) => (
-              <Button
+              <button
                 key={r.id}
-                variant="secondary"
                 onClick={() => handleSelectRoutine(r.id)}
-                className="w-full text-left"
+                className="flex items-center justify-between p-4 rounded-2xl bg-surface-container-low active:scale-[0.98] transition-all text-left"
               >
-                {r.name} ({t.taskCountLabel(r.tasks.length, '').split(' · ')[0]})
-              </Button>
+                <div>
+                  <p className="font-headline font-semibold text-on-surface">{r.name}</p>
+                  <p className="text-xs text-outline mt-0.5">
+                    {t.taskCountLabel(r.tasks.length, '').split(' · ')[0]}
+                  </p>
+                </div>
+                <div className="w-9 h-9 rounded-full bg-primary-container flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" className="w-5 h-5 text-on-primary fill-current">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </div>
+              </button>
             ))}
           </div>
         )}
-        <button
-          onClick={onEdit}
-          className="text-sm text-indigo-500 dark:text-indigo-400"
-        >
+        <button onClick={onEdit} className="text-sm text-primary font-headline font-medium mt-2">
           {t.editRoutines}
         </button>
       </div>
@@ -87,7 +91,7 @@ export function RoutineTimer({ onEdit }: Props) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-6 py-4">
+    <div className="flex flex-col items-center h-full overflow-y-auto px-5 py-4 gap-4">
       <CircularTimer
         remaining={remaining}
         total={total}
@@ -95,48 +99,87 @@ export function RoutineTimer({ onEdit }: Props) {
         sublabel={`${currentTaskIndex + 1} / ${totalTasks}`}
       />
 
-      <div className="flex items-center gap-3">
-        <Button variant="secondary" onClick={handlePrev} disabled={currentTaskIndex === 0}>◀</Button>
+      {/* Controls */}
+      <div className="flex items-center gap-2 w-full max-w-xs">
+        <button
+          onClick={handlePrev}
+          disabled={currentTaskIndex === 0}
+          className="w-11 h-11 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant disabled:opacity-30 active:scale-95 transition-all"
+        >
+          <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
+            <path d="M6 6h2v12H6zm3.5 6 8.5 6V6z" />
+          </svg>
+        </button>
         {status === 'idle' || status === 'finished' ? (
-          <Button size="lg" onClick={start}>{t.start}</Button>
+          <Button size="lg" onClick={start} className="flex-1">
+            {t.start}
+          </Button>
         ) : status === 'running' ? (
-          <Button size="lg" variant="secondary" onClick={pause}>{t.pause}</Button>
+          <Button size="lg" variant="secondary" onClick={pause} className="flex-1">
+            {t.pause}
+          </Button>
         ) : (
-          <Button size="lg" onClick={start}>{t.resume}</Button>
+          <Button size="lg" onClick={start} className="flex-1">
+            {t.resume}
+          </Button>
         )}
-        <Button size="lg" variant="secondary" onClick={reset}>{t.reset}</Button>
-        <Button variant="secondary" onClick={handleNext} disabled={currentTaskIndex === totalTasks - 1}>▶</Button>
+        <Button size="lg" variant="secondary" onClick={reset}>
+          {t.reset}
+        </Button>
+        <button
+          onClick={handleNext}
+          disabled={currentTaskIndex === totalTasks - 1}
+          className="w-11 h-11 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant disabled:opacity-30 active:scale-95 transition-all"
+        >
+          <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
+            <path d="M6 18l8.5-6L6 6v12zm2-8.14L11.03 12 8 14.14V9.86zM14 6h2v12h-2z" />
+          </svg>
+        </button>
       </div>
 
       <div className="flex gap-4">
         <button
           onClick={() => useTimerStore.setState({ activeRoutineId: null, status: 'idle' })}
-          className="text-sm text-indigo-500 dark:text-indigo-400"
+          className="text-sm text-primary font-headline font-medium"
         >
           {t.changeRoutine}
         </button>
-        <button
-          onClick={onEdit}
-          className="text-sm text-indigo-500 dark:text-indigo-400"
-        >
+        <button onClick={onEdit} className="text-sm text-primary font-headline font-medium">
           {t.edit}
         </button>
       </div>
 
-      <div className="w-full max-w-xs flex flex-col gap-1">
+      {/* Task list */}
+      <div className="w-full max-w-sm bg-surface-container-low rounded-2xl overflow-hidden">
         {activeRoutine.tasks.map((task, i) => (
           <div
             key={task.id}
-            className={`flex justify-between items-center px-3 py-2 rounded-xl text-sm ${
+            className={`flex justify-between items-center px-4 py-3 ${
+              i !== activeRoutine.tasks.length - 1 ? '' : ''
+            } ${
               i === currentTaskIndex
-                ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-medium'
-                : i < currentTaskIndex
-                ? 'text-gray-300 dark:text-gray-600 line-through'
-                : 'text-gray-500 dark:text-gray-400'
+                ? 'bg-primary-fixed'
+                : 'bg-transparent'
             }`}
           >
-            <span>{task.name}</span>
-            <span className="text-xs">{formatDuration(task.duration, t.minUnit, t.secUnit)}</span>
+            <span
+              className={`text-sm font-headline font-medium ${
+                i === currentTaskIndex
+                  ? 'text-on-primary-fixed-variant'
+                  : i < currentTaskIndex
+                  ? 'text-outline line-through'
+                  : 'text-on-surface-variant'
+              }`}
+            >
+              {task.name}
+            </span>
+            <span
+              className={`text-xs ${
+                i === currentTaskIndex ? 'text-on-primary-fixed-variant' : 'text-outline'
+              }`}
+            >
+              {formatDuration(task.duration, t.minUnit, t.secUnit)}
+            </span>
           </div>
         ))}
       </div>

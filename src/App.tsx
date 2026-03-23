@@ -11,20 +11,40 @@ import type { NavTab } from './types'
 export default function App() {
   const [tab, setTab] = useState<NavTab>('countdown')
   const status = useTimerStore((s) => s.status)
+  const remaining = useTimerStore((s) => s.remaining)
+  const total = useTimerStore((s) => s.total)
   useTimer()
   useWakeLock(status === 'running')
 
+  const progress = total > 0 ? ((total - remaining) / total) * 100 : 0
+
   return (
-    <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
-      <header className="flex items-center justify-between px-4 py-2 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
-        <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Routine-App</span>
-        <span className="text-xs text-gray-400 dark:text-gray-500">Ver. {__APP_VERSION__}</span>
+    <div className="flex flex-col h-full bg-surface text-on-surface">
+      <header className="flex-shrink-0 bg-surface/80 backdrop-blur-xl">
+        {/* Progress bar */}
+        <div className="h-1 bg-surface-container-highest w-full">
+          <div
+            className="h-full bg-primary-container transition-all duration-500"
+            style={{
+              width: `${progress}%`,
+              boxShadow: progress > 0 ? '0 0 12px rgba(94,92,230,0.4)' : 'none',
+            }}
+          />
+        </div>
+        <div className="flex items-center justify-between px-6 h-12">
+          <span className="font-headline font-extrabold tracking-tighter text-lg text-primary">
+            Routine
+          </span>
+          <span className="text-xs text-outline">v{__APP_VERSION__}</span>
+        </div>
       </header>
+
       <main className="flex-1 overflow-hidden">
         {tab === 'countdown' && <CountdownTimer />}
         {tab === 'routine' && <RoutineScreen />}
         {tab === 'settings' && <SettingsScreen />}
       </main>
+
       <BottomNav active={tab} onChange={setTab} />
     </div>
   )

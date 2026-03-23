@@ -36,43 +36,53 @@ export function TaskItem({ task, onUpdate, onDelete, dragHandleProps }: Props) {
 
   if (editing) {
     return (
-      <div className="flex flex-col gap-2 p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-indigo-200 dark:border-indigo-700">
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="w-full px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
-          placeholder={t.taskNamePlaceholder}
-          autoFocus
-        />
-        <div className="flex gap-2 items-center">
+      <div className="flex flex-col gap-2 p-4 rounded-2xl bg-primary-fixed">
+        <div>
+          <span className="text-[9px] uppercase tracking-widest text-on-primary-fixed-variant font-headline">
+            Step Name
+          </span>
           <input
-            type="number"
-            min="0"
-            value={min}
-            onChange={(e) => setMin(e.target.value)}
-            className="w-16 px-2 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-center"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full bg-surface-container-lowest rounded-xl px-3 py-2.5 text-sm font-headline text-on-surface outline-none mt-1"
+            placeholder={t.taskNamePlaceholder}
+            autoFocus
           />
-          <span className="text-sm text-gray-500">{t.minUnit}</span>
-          <input
-            type="number"
-            min="0"
-            max="59"
-            value={sec}
-            onChange={(e) => setSec(e.target.value)}
-            className="w-16 px-2 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-center"
-          />
-          <span className="text-sm text-gray-500">{t.secUnit}</span>
+        </div>
+        <div>
+          <span className="text-[9px] uppercase tracking-widest text-on-primary-fixed-variant font-headline">
+            Duration
+          </span>
+          <div className="flex gap-2 items-center mt-1">
+            <input
+              type="number"
+              min="0"
+              value={min}
+              onChange={(e) => setMin(e.target.value)}
+              className="w-16 bg-surface-container-lowest rounded-lg px-2 py-2 text-sm font-headline text-center text-on-surface outline-none"
+            />
+            <span className="text-xs text-on-primary-fixed-variant">{t.minUnit}</span>
+            <input
+              type="number"
+              min="0"
+              max="59"
+              value={sec}
+              onChange={(e) => setSec(e.target.value)}
+              className="w-16 bg-surface-container-lowest rounded-lg px-2 py-2 text-sm font-headline text-center text-on-surface outline-none"
+            />
+            <span className="text-xs text-on-primary-fixed-variant">{t.secUnit}</span>
+          </div>
         </div>
         <div className="flex gap-2">
           <button
             onClick={save}
-            className="flex-1 py-1.5 text-sm bg-indigo-500 text-white rounded-lg"
+            className="flex-1 py-2 text-sm font-headline font-semibold bg-primary-container text-on-primary rounded-full"
           >
             {t.save}
           </button>
           <button
             onClick={() => setEditing(false)}
-            className="flex-1 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg"
+            className="flex-1 py-2 text-sm font-headline bg-surface-container-highest text-on-surface-variant rounded-full"
           >
             {t.cancel}
           </button>
@@ -82,25 +92,27 @@ export function TaskItem({ task, onUpdate, onDelete, dragHandleProps }: Props) {
   }
 
   return (
-    <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+    <div className="flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-surface-container-lowest">
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{task.name}</p>
-        <p className="text-xs text-gray-400 dark:text-gray-500">{formatDuration(task.duration, t.minUnit, t.secUnit)}</p>
+        <p className="text-sm font-headline font-semibold text-on-surface truncate">{task.name}</p>
+        <p className="text-xs text-outline mt-0.5">{formatDuration(task.duration, t.minUnit, t.secUnit)}</p>
       </div>
       <button
         onClick={() => setEditing(true)}
-        className="text-gray-400 dark:text-gray-500 text-sm px-2 py-1"
+        className="text-xs text-primary font-headline font-medium px-2 py-1"
       >
         {t.edit}
       </button>
       <button
         onClick={onDelete}
-        className="text-gray-300 dark:text-gray-600 text-xl leading-none"
+        className="w-7 h-7 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant"
       >
-        ×
+        <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
+          <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+        </svg>
       </button>
       <div
-        className="text-gray-300 dark:text-gray-600 text-xl px-1 cursor-grab active:cursor-grabbing touch-none select-none"
+        className="text-outline text-lg px-1 cursor-grab active:cursor-grabbing touch-none select-none"
         {...dragHandleProps}
       >
         ≡
