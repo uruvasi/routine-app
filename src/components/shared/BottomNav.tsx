@@ -1,3 +1,4 @@
+import { useSettingsStore } from '../../store/settingsStore'
 import type { NavTab } from '../../types'
 
 interface Props {
@@ -53,6 +54,8 @@ const tabs: {
 ]
 
 export function BottomNav({ active, onChange }: Props) {
+  const lang = useSettingsStore((s) => s.lang)
+
   return (
     <nav
       className="flex-shrink-0 bg-surface-container-low/90 backdrop-blur-xl rounded-t-[2rem]"
@@ -73,7 +76,7 @@ export function BottomNav({ active, onChange }: Props) {
             >
               <tab.Icon filled={isActive} />
               <span className="font-headline font-medium text-[9px] uppercase tracking-widest">
-                {tab.labelEn}
+                {lang === 'ja' ? tab.labelJa : tab.labelEn}
               </span>
             </button>
           )
