@@ -19,7 +19,8 @@ export function CircularTimer({ remaining, total, size = 280, label, sublabel }:
   const r = (size - stroke * 2) / 2
   const circumference = 2 * Math.PI * r
   const progress = total > 0 ? remaining / total : 0
-  const dashoffset = circumference * (1 - progress)
+  // arc starts at 12 o'clock and sweeps clockwise; length = remaining ratio
+  const arcLength = progress * circumference
   const cx = size / 2
   const cy = size / 2
 
@@ -43,9 +44,9 @@ export function CircularTimer({ remaining, total, size = 280, label, sublabel }:
             stroke="#5e5ce6"
             strokeWidth={stroke}
             strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={dashoffset}
-            style={{ transition: 'stroke-dashoffset 0.5s linear' }}
+            strokeDasharray={`${arcLength} ${circumference}`}
+            strokeDashoffset={0}
+            style={{ transition: 'stroke-dasharray 0.5s linear' }}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
