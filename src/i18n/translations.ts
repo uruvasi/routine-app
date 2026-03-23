@@ -105,8 +105,14 @@ export const translations: Record<Lang, Translation> = {
     resetData: 'データをリセット',
     language: '言語',
     taskCountLabel: (n, total) => `${n}タスク · ${total}`,
-    totalTimeStr: (m, s) =>
-      m > 0 && s > 0 ? `合計 ${m}分${s}秒` : m > 0 ? `合計 ${m}分` : `合計 ${s}秒`,
+    totalTimeStr: (m, s) => {
+      const total = m * 60 + s
+      const h = Math.floor(total / 3600)
+      const mm = Math.floor((total % 3600) / 60)
+      const ss = total % 60
+      if (h > 0) return `${h}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`
+      return `${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`
+    },
     importAddedMsg: (n) => `${n}件のルーティンを追加しました`,
     importReplacedMsg: (n) => `${n}件のルーティンで置き換えました`,
     importEmptyMsg: '読み込めるルーティンがありませんでした',
@@ -160,8 +166,14 @@ export const translations: Record<Lang, Translation> = {
     resetData: 'Reset data',
     language: 'Language',
     taskCountLabel: (n, total) => `${n} task${n !== 1 ? 's' : ''} · ${total}`,
-    totalTimeStr: (m, s) =>
-      m > 0 && s > 0 ? `Total ${m}m ${s}s` : m > 0 ? `Total ${m}m` : `Total ${s}s`,
+    totalTimeStr: (m, s) => {
+      const total = m * 60 + s
+      const h = Math.floor(total / 3600)
+      const mm = Math.floor((total % 3600) / 60)
+      const ss = total % 60
+      if (h > 0) return `${h}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`
+      return `${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`
+    },
     importAddedMsg: (n) => `Added ${n} routine${n !== 1 ? 's' : ''}`,
     importReplacedMsg: (n) => `Replaced with ${n} routine${n !== 1 ? 's' : ''}`,
     importEmptyMsg: 'No routines found in file',

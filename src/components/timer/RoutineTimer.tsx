@@ -178,7 +178,7 @@ export function RoutineTimer({ onEdit }: Props) {
                 i === currentTaskIndex ? 'text-on-primary-fixed-variant' : 'text-outline'
               }`}
             >
-              {formatDuration(task.duration, t.minUnit, t.secUnit)}
+              {formatDuration(task.duration)}
             </span>
           </div>
         ))}
@@ -187,10 +187,10 @@ export function RoutineTimer({ onEdit }: Props) {
   )
 }
 
-function formatDuration(seconds: number, minUnit: string, secUnit: string) {
-  const m = Math.floor(seconds / 60)
+function formatDuration(seconds: number) {
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
   const s = seconds % 60
-  if (m > 0 && s > 0) return `${m}${minUnit}${s}${secUnit}`
-  if (m > 0) return `${m}${minUnit}`
-  return `${s}${secUnit}`
+  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { BottomNav } from './components/shared/BottomNav'
+import { NowPlayingBar } from './components/shared/NowPlayingBar'
 import { CountdownTimer } from './components/timer/CountdownTimer'
 import { RoutineScreen } from './components/routine/RoutineScreen'
 import { SettingsScreen } from './components/shared/SettingsScreen'
@@ -45,6 +46,7 @@ export default function App() {
         {tab === 'settings' && <SettingsScreen />}
       </main>
 
+      <NowPlayingBar onNavigate={setTab} />
       <BottomNav active={tab} onChange={setTab} />
     </div>
   )

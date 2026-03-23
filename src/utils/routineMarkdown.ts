@@ -2,27 +2,36 @@ import type { Routine } from '../types'
 
 const genId = () => Math.random().toString(36).slice(2, 10)
 
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60)
+function formatMmSs(seconds: number): string {
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
   const s = seconds % 60
-  if (m > 0 && s > 0) return `${m}分${s}秒`
-  if (m > 0) return `${m}分`
-  return `${s}秒`
+  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }
 
 function parseDuration(str: string): number {
+  // hh:mm:ss format: "1:05:30"
+  const hhmmss = str.match(/^(\d+):(\d{2}):(\d{2})$/)
+  if (hhmmss) {
+    return parseInt(hhmmss[1]) * 3600 + parseInt(hhmmss[2]) * 60 + parseInt(hhmmss[3])
+  }
+  // mm:ss format: "05:30"
+  const mmss = str.match(/^(\d+):(\d{2})$/)
+  if (mmss) {
+    return parseInt(mmss[1]) * 60 + parseInt(mmss[2])
+  }
+  // Legacy 分秒 format (backward compat)
   const minMatch = str.match(/(\d+)分/)
   const secMatch = str.match(/(\d+)秒/)
-  const min = minMatch ? parseInt(minMatch[1]) : 0
-  const sec = secMatch ? parseInt(secMatch[1]) : 0
-  return min * 60 + sec
+  return (minMatch ? parseInt(minMatch[1]) : 0) * 60 + (secMatch ? parseInt(secMatch[1]) : 0)
 }
 
 export function exportToMarkdown(routines: Routine[]): string {
   return routines
     .map((r) => {
       const tasks = r.tasks
-        .map((t) => `- ${t.name}: ${formatDuration(t.duration)}`)
+        .map((t) => `- ${t.name}: ${formatMmSs(t.duration)}`)
         .join('\n')
       return `# ${r.name}\n${tasks}`
     })
