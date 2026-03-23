@@ -29,14 +29,16 @@ iPhoneをメインターゲットにした PWA（Progressive Web App）。
 | `src/hooks/useTranslation.ts` | `useTranslation()` フック（`{ t, lang }` を返す） |
 | `src/i18n/translations.ts` | ja / en 翻訳定義（`Translation` 型 + `translations` レコード） |
 | `src/utils/routineMarkdown.ts` | Markdown Export/Import 純粋関数 |
+| `src/components/shared/NowPlayingBar.tsx` | 常駐ミニプレイヤー（running/paused 時に全タブで表示） |
 
 ## 画面構成
 
 ```
-AppHeader（全画面共通: プログレスバー + アプリ名 + バージョン）
-BottomNav: タイマー / ルーティン / 設定（SVGアイコン + ピル型アクティブ）
+AppHeader（全画面共通: 進捗バー[1px] + アプリ名 + バージョン、グラスモーフィズム）
+BottomNav: タイマー / ルーティン / 設定（SVGアイコン + ピル型アクティブ + rounded-top）
+NowPlayingBar: running/paused 時のみ表示（main と BottomNav の間）
   タイマー（CountdownTimer）
-    CircularTimer — リング + ヒーロータイマー数字
+    CircularTimer — 時計回りリング + ヒーロータイマー数字（mm:ss）
     プリセットカード + 手動入力カード（idle/finished 時のみ表示）
   ルーティン（RoutineScreen）
     RoutineTimer — 実行画面（ルーティン選択 or タイマー動作）
@@ -66,6 +68,7 @@ BottomNav: タイマー / ルーティン / 設定（SVGアイコン + ピル型
 - **角丸**: 最小 `rounded-xl`、カード `rounded-2xl`、ボタン `rounded-full`
 - **フォント**: 見出し・数字 `font-headline`（Plus Jakarta Sans）、本文 Inter
 - **プライマリボタン**: `bg-gradient-to-b from-primary-container to-primary` + `rounded-full` + primary shadow
+- **ボタンテキスト**: `whitespace-nowrap`（スマホで折り返さない）
 
 ## タイマーモード
 
@@ -73,6 +76,7 @@ BottomNav: タイマー / ルーティン / 設定（SVGアイコン + ピル型
 - **routine** — ルーティンのタスクを順番にタイマーとして実行
 - pomodoro / interval はコード・型ともに完全削除済み
 - localStorage に古いモード値が残った場合は `onRehydrateStorage` で countdown にフォールバック
+- タイマーは同時に1つだけ動作（CountdownとRoutineでtimerStoreを共有）
 
 ## 音声・アラート仕様
 
@@ -90,10 +94,11 @@ BottomNav: タイマー / ルーティン / 設定（SVGアイコン + ピル型
 
 ```markdown
 # ルーティン名
-- タスク名: X分
-- タスク名: X分Y秒
+- タスク名: 05:00
+- タスク名: 05:30
 ```
 
+- フォーマット: `mm:ss`（旧 `X分Y秒` 形式もインポート時に後方互換で読める）
 - エクスポート: `routines-YYYY-MM-DD.md` としてダウンロード
 - インポート: 「既存に追加」か「すべて置き換え」を選択してからファイル選択
 
@@ -106,7 +111,7 @@ npm run build  # 本番ビルド（dist/ に PWA ファイル生成）
 
 - バージョンは `package.json` の `version` を管理。デプロイごとに手動で上げる
 - `vite.config.ts` で `__APP_VERSION__` としてビルド時に埋め込み、AppHeader に表示
-- 現在: **v0.8.0**
+- 現在: **v0.9.0**
 
 ---
 
@@ -129,50 +134,47 @@ npm run build  # 本番ビルド（dist/ に PWA ファイル生成）
 
 ### 2026-03-09 — セッション3: 画面構成刷新・デッドコード削除・ドラッグ並び替え
 
-1. **画面構成刷新** (v0.5.0)
-   - BottomNav をカウントダウン / ルーティン / 設定の3タブに統合
-   - `RoutineScreen` を新設（RoutineTimer + RoutineList/Editor を統合管理）
-
-2. **デッドコード完全削除** (v0.5.0)
-   - `PomodoroTimer.tsx` / `IntervalTimer.tsx` / `TimerScreen.tsx` を削除
-
+1. **画面構成刷新** (v0.5.0) — BottomNav を3タブに統合、`RoutineScreen` 新設
+2. **デッドコード完全削除** (v0.5.0) — PomodoroTimer / IntervalTimer / TimerScreen 削除
 3. **共通ヘッダー追加** (v0.6.0)
-
-4. **ドラッグ並び替え実装** (v0.6.0〜v0.6.2)
-   - `@dnd-kit/core` + `@dnd-kit/sortable` を導入
-   - RoutineEditor: タスクを `≡` ハンドル長押しドラッグで並び替え
-   - RoutineList: ルーティンを `≡` ハンドル長押しドラッグで並び替え
+4. **ドラッグ並び替え実装** (v0.6.0〜v0.6.2) — @dnd-kit 導入、タスク・ルーティン両対応
 
 ### 2026-03-09 — セッション4: 多言語対応（i18n）
 
-1. **翻訳システム実装** (v0.7.0)
-   - `src/i18n/translations.ts` — 全文字列の `ja` / `en` 翻訳定義
-   - `src/store/settingsStore.ts` — 言語設定を localStorage に永続化
-   - `src/hooks/useTranslation.ts` — `useTranslation()` フック
-
+1. **翻訳システム実装** (v0.7.0) — `translations.ts` / `settingsStore` / `useTranslation`
 2. **全コンポーネントの i18n 適用**
 3. **音声読み上げの言語追従**
 4. **設定画面に言語切替 UI 追加**
 
 ### 2026-03-23 — セッション5: Stitch デザインシステム適用
 
-1. **デザインシステム刷新** (v0.8.0) — Stitch "Rhythmic Curator" デザインを適用
-   - `src/index.css` の `@theme` に Material 風カラートークンを定義
-   - `index.html` に Google Fonts（Plus Jakarta Sans + Inter）追加
+1. **デザインシステム刷新** (v0.8.0) — Stitch "Rhythmic Curator" デザインを全コンポーネントに適用
+   - カラートークン定義、Plus Jakarta Sans フォント、No-Lineルール
+   - AppHeader（進捗バー付き）、BottomNav（ピル型）、Button（グラデーション）
+   - CircularTimer、CountdownTimer、RoutineTimer、RoutineList、RoutineEditor、TaskItem、SettingsScreen
 
-2. **全コンポーネントのビジュアル刷新**
-   - `App.tsx`: タイマー進捗を反映するトップ進捗バー（primary glow付き）、グラスモーフィズムヘッダー
-   - `BottomNav`: ピル型アクティブインジケーター、SVGアイコン、rounded-top + backdrop-blur
-   - `Button`: グラデーション primary ボタン（`rounded-full`）、セカンダリはトーナル背景
-   - `CircularTimer`: 細いリング（3px）、Plus Jakarta Sans ヒーロー数字、`.00` 装飾
-   - `CountdownTimer`: プリセットカード + 手動入力カード（MM:SS入力）
-   - `RoutineTimer`: ルーティン選択をカードリスト表示、タスクリストを `primary-fixed` ハイライト
-   - `RoutineList`: "YOUR LIBRARY" セクションヘッダー、ダッシュボーダー新規作成ボタン
-   - `RoutineEditor`: ステップカード（`surface-container-lowest`）、アクティブ編集時 `primary-fixed` 背景
-   - `TaskItem`: 削除ボタンをごみ箱SVGアイコンに変更
-   - `SettingsScreen`: セクション分け（General / Data / Danger Zone）、言語トグルがピル型セグメント
+### 2026-03-23 — セッション6: NowPlayingBar・mm:ss統一・タイマー修正
 
-**現在の状態:** v0.8.0、main にマージ済み、Cloudflare Pages にデプロイ済み。
+1. **NowPlayingBar 追加** (v0.9.0) — タイマー動作中に全タブで常駐表示
+   - モードアイコン + タスク名/ラベル + 残り時間（mm:ss）+ ▶/⏸ボタン
+   - 薄いプログレスバー付き。ラベルタップでアクティブタブへ遷移
+   - `src/components/shared/NowPlayingBar.tsx`
+
+2. **時間フォーマット統一** (v0.9.0) — 全表示を mm:ss 形式に変更
+   - タスク時間表示: `5分30秒` → `05:30`
+   - ルーティン合計時間: `合計 15分` → `15:00`
+   - Export 形式: `- タスク名: 05:00`（旧 `分秒` 形式はインポート時に後方互換）
+
+3. **CircularTimer 時計回り修正** (v0.9.0)
+   - `stroke-dashoffset` → 可変 `stroke-dasharray` 方式に変更
+   - 12時スタートで時計回りに弧が縮小するように
+
+4. **バグ修正・細部調整**
+   - タイマー数字の装飾 `.00`（未使用ミリ秒）を削除
+   - Button に `whitespace-nowrap` を追加しスマホでテキストが1行に収まるよう修正
+   - `package.json` バージョンを 0.7.0 → 0.9.0 に修正（UI表示と一致させる）
+
+**現在の状態:** v0.9.0、main にマージ済み、Cloudflare Pages にデプロイ済み。
 
 ---
 
@@ -184,20 +186,24 @@ npm run build  # 本番ビルド（dist/ に PWA ファイル生成）
 - [x] ◀▶ タスクジャンプ（running中のみ音声あり）
 - [x] Wake Lock（画面スリープ防止、タイマー実行中）
 - [x] Page Visibility API（バックグラウンドから戻ったとき残り時間を再計算）
-- [x] タイマー進捗バー（画面上部）
+- [x] タイマー進捗バー（画面上部・ヘッダー内）
+- [x] NowPlayingBar（全タブ共通の常駐ミニプレイヤー）
+- [x] タイマーは同時に1つのみ動作（timerStore 共有）
 
 ### ルーティン管理
 - [x] ルーティン CRUD（作成・名前変更・削除）
 - [x] タスク CRUD（作成・編集・削除）
 - [x] ルーティン一覧のドラッグ並び替え
 - [x] タスクのドラッグ並び替え
-- [x] Markdown Export（`routines-YYYY-MM-DD.md`）
-- [x] Markdown Import（既存に追加 / すべて置き換え）
+- [x] Markdown Export（`routines-YYYY-MM-DD.md`、mm:ss形式）
+- [x] Markdown Import（既存に追加 / すべて置き換え、旧形式後方互換）
 
 ### UI / UX
 - [x] 日本語 / 英語 切り替え（i18n）
 - [x] 音声読み上げ（カウントダウン: 開始・残り1分・完了 / ルーティン: タスク開始・終了）
 - [x] Stitch デザインシステム（カラートークン・Plus Jakarta Sans・ノーボーダー）
+- [x] 時間表示の mm:ss 統一（タスク・合計・Export）
+- [x] CircularTimer 時計回り
 - [x] PWA（ホーム画面追加、Service Worker、オフライン対応）
 
 ### インフラ
@@ -206,12 +212,18 @@ npm run build  # 本番ビルド（dist/ に PWA ファイル生成）
 
 ---
 
-## 未実装・既知の問題
+## バックログ
 
-### 機能不足
-- [ ] **BottomNav ラベルが常に英語** — `labelJa` を定義したが `useTranslation` を呼んでいないため、言語切替に未対応
+### 優先度高（使っていて気になるもの）
+- [ ] **BottomNav ラベルの i18n 対応** — 現在ラベルが常に英語（TIMER/ROUTINE/SETTINGS）。`useTranslation` を組み込んで日本語/英語に追従させる
+
+### 優先度中
+- [ ] **ダークモード** — デザインシステムにダークトークンを定義して対応
+- [ ] **CountdownTimer の手動入力 UX 改善** — MM:SS 入力が少し使いにくい（数字キーボードが閉じにくい等）
+
+### 優先度低（しばらくテストしながら判断）
 - [ ] **バックグラウンドでのタイマー継続** — iOS PWA の制約でバックグラウンド停止。Page Visibility API で復帰時に補正はしているが完全ではない
-- [ ] **バックグラウンド完了通知** — バックグラウンド中はアラート音・読み上げが鳴らない
+- [ ] **バックグラウンド完了通知** — バックグラウンド中はアラート音・読み上げが鳴らない。サーバー Push か ネイティブ化で対応
 - [ ] **認証・デバイス間データ同期** — localStorage のみ。端末をまたいだ同期なし
 
 ---
@@ -257,15 +269,3 @@ npm run build  # 本番ビルド（dist/ に PWA ファイル生成）
 - Watch 連携まで本気でやるならネイティブ化一択
 - ただし実装コストが大きく跳ね上がる（Swift 学習 or RN 移行）
 - まずは現行 PWA でユーザビリティを磨き、必要性が確定したらネイティブ化を検討
-
----
-
-## バックログ
-
-### 優先度中
-- **BottomNav i18n 対応** — `useTranslation` を使ってラベルを言語に合わせる
-- **ダークモード** — デザインシステムのダークトークンを定義して対応
-
-### 優先度低（しばらくテストしながら判断）
-- **認証・デバイス間連携** — localStorage 構成でしばらく運用。必要になったら検討
-- **バックグラウンド通知** — サーバー Push か ネイティブ化で対応
