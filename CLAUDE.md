@@ -22,7 +22,7 @@ iPhoneをメインターゲットにした PWA（Progressive Web App）。
 | `src/types/index.ts` | 共有型定義（TimerMode: countdown/routine のみ） |
 | `src/store/routineStore.ts` | ルーティン CRUD + reorderTasks / reorderRoutines / importRoutines |
 | `src/store/timerStore.ts` | タイマー状態機械（mode / status / remaining / total / jumpToTask） |
-| `src/store/settingsStore.ts` | 言語設定（lang: 'ja' \| 'en'）を localStorage に永続化 |
+| `src/store/settingsStore.ts` | 言語設定（lang: 'ja' \| 'en'）+ テーマ（theme: 'light' \| 'dark'）を localStorage に永続化 |
 | `src/hooks/useTimer.ts` | rAF ベースのティックループ、Page Visibility API 対応 |
 | `src/hooks/useWakeLock.ts` | Wake Lock API ラッパー |
 | `src/hooks/useAudioAlert.ts` | Web Audio API ビープ音 + SpeechSynthesis 読み上げ |
@@ -44,7 +44,7 @@ NowPlayingBar: running/paused 時のみ表示（main と BottomNav の間）
     RoutineTimer — 実行画面（ルーティン選択 or タイマー動作）
     RoutineList  — 一覧（≡ドラッグで並び替え、ダッシュボーダー新規作成）
       RoutineEditor — タスク編集（≡ドラッグで並び替え）
-  設定（SettingsScreen: 言語 / Export/Import / リセット）
+  設定（SettingsScreen: 言語 / テーマ / Export/Import / リセット）
 ```
 
 ## デザインシステム（Stitch "Rhythmic Curator"）
@@ -111,7 +111,7 @@ npm run build  # 本番ビルド（dist/ に PWA ファイル生成）
 
 - バージョンは `package.json` の `version` を管理。デプロイごとに手動で上げる
 - `vite.config.ts` で `__APP_VERSION__` としてビルド時に埋め込み、AppHeader に表示
-- 現在: **v0.9.0**
+- 現在: **v0.10.0**
 
 ---
 
@@ -174,7 +174,20 @@ npm run build  # 本番ビルド（dist/ に PWA ファイル生成）
    - Button に `whitespace-nowrap` を追加しスマホでテキストが1行に収まるよう修正
    - `package.json` バージョンを 0.7.0 → 0.9.0 に修正（UI表示と一致させる）
 
-**現在の状態:** v0.9.0、main にマージ済み、Cloudflare Pages にデプロイ済み。
+### 2026-03-24 — セッション7: BottomNav i18n・ダークモード
+
+1. **BottomNav ラベルの i18n 対応** (v0.10.0) — ラベルが常に英語だった問題を修正
+   - `useSettingsStore` で `lang` を購読し、`labelJa` / `labelEn` を切り替え
+   - タイマー→「タイマー/TIMER」、ルーティン→「ルーティン/ROUTINE」、設定→「設定/SETTINGS」
+
+2. **ダークモード実装** (v0.10.0)
+   - `settingsStore` に `theme: 'light' | 'dark'` + `setTheme` を追加（localStorage 永続化）
+   - `App.tsx` の `useEffect` で `html.dark` クラスを付け外し
+   - `index.css` の `html.dark` ブロックで全カラートークンをオーバーライド（Tailwind v4 の CSS 変数参照を活用）
+   - `SettingsScreen` に Light/Dark 切替ボタンを追加（言語切替と同じ pill 型 UI）
+   - `CircularTimer` のハードコード stroke 色を `var(--color-surface-container-highest)` / `var(--color-primary-container)` に変更
+
+**現在の状態:** v0.10.0、main にマージ済み、Cloudflare Pages にデプロイ済み。
 
 ---
 
@@ -200,6 +213,8 @@ npm run build  # 本番ビルド（dist/ に PWA ファイル生成）
 
 ### UI / UX
 - [x] 日本語 / 英語 切り替え（i18n）
+- [x] BottomNav ラベルの i18n 対応（言語に追従）
+- [x] ダークモード（設定画面でライト/ダーク切替、localStorage 永続化）
 - [x] 音声読み上げ（カウントダウン: 開始・残り1分・完了 / ルーティン: タスク開始・終了）
 - [x] Stitch デザインシステム（カラートークン・Plus Jakarta Sans・ノーボーダー）
 - [x] 時間表示の mm:ss 統一（タスク・合計・Export）
@@ -214,12 +229,9 @@ npm run build  # 本番ビルド（dist/ に PWA ファイル生成）
 
 ## バックログ
 
-### 優先度高（使っていて気になるもの）
-- [ ] **BottomNav ラベルの i18n 対応** — 現在ラベルが常に英語（TIMER/ROUTINE/SETTINGS）。`useTranslation` を組み込んで日本語/英語に追従させる
-
 ### 優先度中
-- [ ] **ダークモード** — デザインシステムにダークトークンを定義して対応
 - [ ] **CountdownTimer の手動入力 UX 改善** — MM:SS 入力が少し使いにくい（数字キーボードが閉じにくい等）
+- [ ] **ダークモードの細部調整** — `red-50` / `red-500` などハードコードの色がダークモードで浮く（SettingsScreen の danger zone など）
 
 ### 優先度低（しばらくテストしながら判断）
 - [ ] **バックグラウンドでのタイマー継続** — iOS PWA の制約でバックグラウンド停止。Page Visibility API で復帰時に補正はしているが完全ではない
