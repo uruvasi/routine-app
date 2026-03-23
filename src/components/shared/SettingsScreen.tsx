@@ -6,7 +6,7 @@ import { exportToMarkdown, importFromMarkdown } from '../../utils/routineMarkdow
 
 export function SettingsScreen() {
   const { routines, importRoutines } = useRoutineStore()
-  const { lang, setLang } = useSettingsStore()
+  const { lang, setLang, theme, setTheme } = useSettingsStore()
   const { t } = useTranslation()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [importResult, setImportResult] = useState<string | null>(null)
@@ -86,6 +86,33 @@ export function SettingsScreen() {
               }`}
             >
               English
+            </button>
+          </div>
+        </div>
+
+        {/* Theme */}
+        <div className="flex items-center justify-between px-4 py-4 rounded-2xl bg-surface-container-low">
+          <span className="text-sm font-headline font-medium text-on-surface">{t.themeLabel}</span>
+          <div className="flex gap-1 bg-surface-container-highest rounded-full p-0.5">
+            <button
+              onClick={() => setTheme('light')}
+              className={`px-3 py-1.5 rounded-full text-sm font-headline font-medium transition-all ${
+                theme === 'light'
+                  ? 'bg-primary-container text-on-primary'
+                  : 'text-on-surface-variant'
+              }`}
+            >
+              {t.themeLight}
+            </button>
+            <button
+              onClick={() => setTheme('dark')}
+              className={`px-3 py-1.5 rounded-full text-sm font-headline font-medium transition-all ${
+                theme === 'dark'
+                  ? 'bg-primary-container text-on-primary'
+                  : 'text-on-surface-variant'
+              }`}
+            >
+              {t.themeDark}
             </button>
           </div>
         </div>

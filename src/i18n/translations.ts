@@ -47,6 +47,9 @@ export type Translation = {
   importReplace: string
   resetData: string
   language: string
+  themeLabel: string
+  themeLight: string
+  themeDark: string
   // dynamic
   taskCountLabel: (n: number, totalStr: string) => string
   totalTimeStr: (m: number, s: number) => string
@@ -104,6 +107,9 @@ export const translations: Record<Lang, Translation> = {
     importReplace: 'すべて置き換え',
     resetData: 'データをリセット',
     language: '言語',
+    themeLabel: 'テーマ',
+    themeLight: 'ライト',
+    themeDark: 'ダーク',
     taskCountLabel: (n, total) => `${n}タスク · ${total}`,
     totalTimeStr: (m, s) => {
       const total = m * 60 + s
@@ -165,6 +171,9 @@ export const translations: Record<Lang, Translation> = {
     importReplace: 'Replace all',
     resetData: 'Reset data',
     language: 'Language',
+    themeLabel: 'Theme',
+    themeLight: 'Light',
+    themeDark: 'Dark',
     taskCountLabel: (n, total) => `${n} task${n !== 1 ? 's' : ''} · ${total}`,
     totalTimeStr: (m, s) => {
       const total = m * 60 + s

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { BottomNav } from './components/shared/BottomNav'
 import { NowPlayingBar } from './components/shared/NowPlayingBar'
 import { CountdownTimer } from './components/timer/CountdownTimer'
@@ -7,10 +7,20 @@ import { SettingsScreen } from './components/shared/SettingsScreen'
 import { useTimer } from './hooks/useTimer'
 import { useWakeLock } from './hooks/useWakeLock'
 import { useTimerStore } from './store/timerStore'
+import { useSettingsStore } from './store/settingsStore'
 import type { NavTab } from './types'
 
 export default function App() {
   const [tab, setTab] = useState<NavTab>('countdown')
+  const theme = useSettingsStore((s) => s.theme)
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [theme])
   const status = useTimerStore((s) => s.status)
   const remaining = useTimerStore((s) => s.remaining)
   const total = useTimerStore((s) => s.total)

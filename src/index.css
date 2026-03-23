@@ -21,6 +21,27 @@
   --font-body: 'Inter', sans-serif;
 }
 
+/* Dark mode: override tokens on html.dark */
+html.dark {
+  color-scheme: dark;
+  --color-primary: #c2c1ff;
+  --color-primary-container: #4d4ad5;
+  --color-primary-fixed: #2e2b6a;
+  --color-primary-fixed-dim: #4441cc;
+  --color-on-primary: #0c006b;
+  --color-on-primary-fixed-variant: #c2c1ff;
+  --color-surface: #121318;
+  --color-surface-container-lowest: #0d0e13;
+  --color-surface-container-low: #1a1c21;
+  --color-surface-container: #1e2026;
+  --color-surface-container-high: #282a30;
+  --color-surface-container-highest: #333540;
+  --color-on-surface: #e3e2ea;
+  --color-on-surface-variant: #c7c4d7;
+  --color-outline: #918fa0;
+  --color-outline-variant: #464554;
+}
+
 * {
   -webkit-tap-highlight-color: transparent;
 }
@@ -37,8 +58,8 @@ body {
   -webkit-user-select: none;
   user-select: none;
   font-family: 'Inter', sans-serif;
-  background-color: #f9f9fe;
-  color: #1a1c1f;
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
 }
 
 #root {

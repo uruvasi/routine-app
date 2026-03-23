@@ -33,7 +33,7 @@ export function CircularTimer({ remaining, total, size = 280, label, sublabel }:
             cy={cy}
             r={r}
             fill="none"
-            stroke="#e2e2e7"
+            style={{ stroke: 'var(--color-surface-container-highest)' }}
             strokeWidth={stroke}
           />
           <circle
@@ -41,12 +41,11 @@ export function CircularTimer({ remaining, total, size = 280, label, sublabel }:
             cy={cy}
             r={r}
             fill="none"
-            stroke="#5e5ce6"
+            style={{ stroke: 'var(--color-primary-container)', transition: 'stroke-dasharray 0.5s linear' }}
             strokeWidth={stroke}
             strokeLinecap="round"
             strokeDasharray={`${arcLength} ${circumference}`}
             strokeDashoffset={0}
-            style={{ transition: 'stroke-dasharray 0.5s linear' }}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
