@@ -1,3 +1,4 @@
+import { useRef, useEffect } from 'react'
 import { useTimerStore } from '../../store/timerStore'
 import { useRoutineStore } from '../../store/routineStore'
 import { useAudioAlert } from '../../hooks/useAudioAlert'
@@ -20,8 +21,14 @@ export function RoutineTimer({ onEdit }: Props) {
   const { playStartAlert, speak } = useAudioAlert()
   const { t } = useTranslation()
 
+  const activeTaskRef = useRef<HTMLDivElement>(null)
+
   const activeRoutine = routines.find((r) => r.id === activeRoutineId)
   const currentTask = activeRoutine?.tasks[currentTaskIndex]
+
+  useEffect(() => {
+    activeTaskRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }, [currentTaskIndex])
 
   const handleSelectRoutine = (routineId: string) => {
     const routine = routines.find((r) => r.id === routineId)
@@ -91,16 +98,18 @@ export function RoutineTimer({ onEdit }: Props) {
   }
 
   return (
-    <div className="flex flex-col items-center h-full overflow-y-auto px-5 py-4 gap-4">
-      <CircularTimer
-        remaining={remaining}
-        total={total}
-        label={currentTask?.name}
-        sublabel={`${currentTaskIndex + 1} / ${totalTasks}`}
-      />
+    <div className="flex flex-col items-center h-full overflow-hidden px-5 py-4 gap-4">
+      <div className="flex-shrink-0">
+        <CircularTimer
+          remaining={remaining}
+          total={total}
+          label={currentTask?.name}
+          sublabel={`${currentTaskIndex + 1} / ${totalTasks}`}
+        />
+      </div>
 
       {/* Controls */}
-      <div className="flex items-center gap-2 w-full max-w-xs">
+      <div className="flex-shrink-0 flex items-center gap-2 w-full max-w-xs">
         <button
           onClick={handlePrev}
           disabled={currentTaskIndex === 0}
@@ -137,7 +146,7 @@ export function RoutineTimer({ onEdit }: Props) {
         </button>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex-shrink-0 flex gap-4">
         <button
           onClick={() => useTimerStore.setState({ activeRoutineId: null, status: 'idle' })}
           className="text-sm text-primary font-headline font-medium"
@@ -150,13 +159,13 @@ export function RoutineTimer({ onEdit }: Props) {
       </div>
 
       {/* Task list */}
-      <div className="w-full max-w-sm bg-surface-container-low rounded-2xl overflow-hidden">
+      <div className="flex-1 min-h-0 w-full max-w-sm overflow-y-auto rounded-2xl pb-2">
+        <div className="bg-surface-container-low rounded-2xl overflow-hidden">
         {activeRoutine.tasks.map((task, i) => (
           <div
             key={task.id}
+            ref={i === currentTaskIndex ? activeTaskRef : null}
             className={`flex justify-between items-center px-4 py-3 ${
-              i !== activeRoutine.tasks.length - 1 ? '' : ''
-            } ${
               i === currentTaskIndex
                 ? 'bg-primary-fixed'
                 : 'bg-transparent'
@@ -182,6 +191,7 @@ export function RoutineTimer({ onEdit }: Props) {
             </span>
           </div>
         ))}
+        </div>
       </div>
     </div>
   )
