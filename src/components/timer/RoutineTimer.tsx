@@ -74,6 +74,7 @@ export function RoutineTimer({ onEdit }: Props) {
   }
 
   const totalTasks = activeRoutine.tasks.length
+  const isLastTask = currentTaskIndex === totalTasks - 1
 
   const handlePrev = () => {
     if (currentTaskIndex > 0) {
@@ -132,9 +133,15 @@ export function RoutineTimer({ onEdit }: Props) {
             {t.resume}
           </Button>
         )}
-        <Button size="lg" variant="secondary" onClick={reset}>
-          {t.reset}
-        </Button>
+        {isLastTask ? (
+          <Button size="lg" variant="secondary" onClick={finish}>
+            {t.completeRoutine}
+          </Button>
+        ) : (
+          <Button size="lg" variant="secondary" onClick={reset}>
+            {t.reset}
+          </Button>
+        )}
         <button
           onClick={handleNext}
           disabled={currentTaskIndex === totalTasks - 1}
@@ -156,7 +163,7 @@ export function RoutineTimer({ onEdit }: Props) {
         <button onClick={onEdit} className="text-sm text-primary font-headline font-medium">
           {t.edit}
         </button>
-        {(status === 'running' || status === 'paused') && (
+        {!isLastTask && (status === 'running' || status === 'paused') && (
           <button
             onClick={finish}
             className="text-sm text-outline font-headline font-medium"
