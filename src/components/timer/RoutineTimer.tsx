@@ -14,7 +14,7 @@ export function RoutineTimer({ onEdit }: Props) {
   const {
     status, remaining, total,
     activeRoutineId, currentTaskIndex,
-    start, pause, reset,
+    start, pause, reset, finish,
     setActiveRoutine, jumpToTask,
   } = useTimerStore()
   const routines = useRoutineStore((s) => s.routines)
@@ -146,7 +146,7 @@ export function RoutineTimer({ onEdit }: Props) {
         </button>
       </div>
 
-      <div className="flex-shrink-0 flex gap-4">
+      <div className="flex-shrink-0 flex gap-4 flex-wrap justify-center">
         <button
           onClick={() => useTimerStore.setState({ activeRoutineId: null, status: 'idle' })}
           className="text-sm text-primary font-headline font-medium"
@@ -156,6 +156,14 @@ export function RoutineTimer({ onEdit }: Props) {
         <button onClick={onEdit} className="text-sm text-primary font-headline font-medium">
           {t.edit}
         </button>
+        {(status === 'running' || status === 'paused') && (
+          <button
+            onClick={finish}
+            className="text-sm text-outline font-headline font-medium"
+          >
+            {t.completeRoutine}
+          </button>
+        )}
       </div>
 
       {/* Task list */}

@@ -22,6 +22,7 @@ export type Translation = {
   noRoutinesYet: string
   editRoutines: string
   changeRoutine: string
+  completeRoutine: string
   // routine list
   routinesTitle: string
   newRoutine: string
@@ -85,6 +86,7 @@ export const translations: Record<Lang, Translation> = {
     noRoutinesYet: 'ルーティンがまだありません',
     editRoutines: 'ルーティンを編集',
     changeRoutine: 'ルーティン変更',
+    completeRoutine: 'ルーティン完了',
     routinesTitle: 'ルーティン',
     newRoutine: '+ 新規',
     routineNamePlaceholder: 'ルーティン名',
@@ -149,6 +151,7 @@ export const translations: Record<Lang, Translation> = {
     noRoutinesYet: 'No routines yet',
     editRoutines: 'Edit routines',
     changeRoutine: 'Change routine',
+    completeRoutine: 'Complete routine',
     routinesTitle: 'Routines',
     newRoutine: '+ New',
     routineNamePlaceholder: 'Routine name',
