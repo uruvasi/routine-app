@@ -4,6 +4,7 @@ import { useTranslation } from '../../hooks/useTranslation'
 import * as api from '../../sync/api'
 import { ApiError } from '../../sync/api'
 import { onLoggedIn, syncNow } from '../../sync/engine'
+import { accountView } from './accountView'
 
 const rowCls = 'flex items-center justify-between px-4 py-4 rounded-2xl bg-surface-container-low'
 const pillBtn =
@@ -115,11 +116,11 @@ export function AccountSection() {
     <div className="flex flex-col gap-3">
       <p className="text-xs uppercase tracking-widest text-outline font-headline px-1">{t.accountTitle}</p>
 
-      {!loginAvailable ? (
+      {accountView(loggedIn, loginAvailable) === 'unavailable' ? (
         <div className={rowCls}>
           <span className="text-sm text-outline font-headline">{t.loginOnlyOn}</span>
         </div>
-      ) : !loggedIn ? (
+      ) : accountView(loggedIn, loginAvailable) === 'login' ? (
         <div className="flex flex-col gap-3 px-4 py-4 rounded-2xl bg-surface-container-low">
           {status === 'needs-login' && <p className="text-sm text-primary font-headline">{t.syncStatusNeedsLogin}</p>}
           {hasUser ? (
