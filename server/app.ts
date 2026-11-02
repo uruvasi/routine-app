@@ -3,6 +3,7 @@ import type { MiddlewareHandler } from 'hono'
 import { getCookie } from 'hono/cookie'
 import type { AppEnv } from './env'
 import { authRoutes } from './auth'
+import { routineRoutes } from './routines'
 import { clearSessionCookie, readSession, sha256Hex, SESSION_COOKIE } from './session'
 
 export function requestOrigin(c: { req: { header: (n: string) => string | undefined; url: string } }) {
@@ -22,6 +23,7 @@ export function createApp() {
 
   app.use('/auth/*', originGuard)
   app.route('/auth', authRoutes())
+  app.route('/routines', routineRoutes())
 
   app.get('/session', async (c) => {
     const s = await readSession(c)

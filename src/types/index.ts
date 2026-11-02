@@ -11,6 +11,14 @@ export interface Routine {
   createdAt: number
 }
 
+/** Cloud copy of a user's routines (server/routines.ts ⇄ src/sync). */
+export interface Snapshot {
+  revision: number
+  routines: Routine[]
+  updatedAt: number | null
+  clearedAt: number | null
+}
+
 export type TimerMode = 'countdown' | 'routine'
 export type TimerStatus = 'idle' | 'running' | 'paused' | 'finished'
 
