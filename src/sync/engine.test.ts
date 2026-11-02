@@ -26,7 +26,7 @@ function fakeApi() {
   return {
     getSession: vi.fn(async () => ({ loggedIn: true, hasUser: true, loginAvailable: true })),
     getRoutines: vi.fn(async (): Promise<Snapshot> => snap(1, useRoutineStore.getState().routines)),
-    putRoutines: vi.fn(async (base: number, _r: Routine[]): Promise<{ revision: number; updatedAt: number } | { conflict: Snapshot }> => ({
+    putRoutines: vi.fn(async (base: number, ..._rest: [Routine[]]): Promise<{ revision: number; updatedAt: number } | { conflict: Snapshot }> => ({
       revision: base + 1,
       updatedAt: 2,
     })),
