@@ -71,3 +71,41 @@ export default defineConfig([
   },
 ])
 ```
+
+---
+
+# Routine App — cloud sync operations
+
+## One-time setup
+
+```bash
+npx wrangler d1 create routine-app-db          # put database_id into wrangler.toml
+npx wrangler d1 create routine-app-db-staging  # put database_id into [env.preview]
+# Pages → Settings → Variables and Secrets: SETUP_PASSPHRASE (different values for Production and Preview)
+```
+
+The GitHub `CLOUDFLARE_API_TOKEN` needs D1 edit permission (migrations run in CI).
+
+- Production: `https://rt.kazusa.org` (passkey RP ID `rt.kazusa.org` — never change it)
+- Staging: push to `staging` → `https://staging.routine-app.pages.dev` (separate D1 and passkeys)
+
+## Local development
+
+```bash
+cp .dev.vars.example .dev.vars
+npx wrangler d1 migrations apply routine-app-db --local
+npm run build && npx wrangler pages dev dist   # http://localhost:8788
+npm test
+```
+
+## Lost every passkey and the recovery code
+
+Set a new recovery code directly in D1, then sign in with it and add a passkey.
+User and routines stay as they are (foreign keys make deleting the user a bad idea).
+
+```bash
+CODE=ABCD-EFGH-JKLM-NPQR   # pick 16 chars from A-H J-N P-Z 2-9, grouped by 4
+HASH=$(printf %s "$CODE" | shasum -a 256 | cut -d' ' -f1)
+npx wrangler d1 execute routine-app-db --remote --command "UPDATE recovery_codes SET code_hash = '$HASH'"
+# In the app: 復旧コードでログイン → enter $CODE → note the new code → パスキーを追加
+```

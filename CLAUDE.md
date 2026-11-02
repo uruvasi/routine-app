@@ -11,7 +11,10 @@ iPhoneをメインターゲットにした PWA（Progressive Web App）。
 - **Tailwind CSS v4** — `@tailwindcss/vite` プラグイン使用。`tailwind.config.ts` は不要、CSS で `@import "tailwindcss"` のみ
 - **Zustand v5** — `persist` ミドルウェアで localStorage に永続化
 - **vite-plugin-pwa v1** — Service Worker 自動生成
-- **Cloudflare Pages** — GitHub Actions 経由で `main` push 時に自動デプロイ
+- **Cloudflare Pages** — GitHub Actions 経由で `main` push 時に自動デプロイ（`staging` push で検証環境）
+- **Cloudflare Pages Functions + D1 + Hono** — `/api/*`（パスキー認証・ルーティン同期）
+- **@simplewebauthn/server + browser** — パスキー（WebAuthn）
+- **Vitest 4 + @cloudflare/vitest-plugin** — `npm test`（client: node / server: Workers ランタイム）
 - **@dnd-kit/core + @dnd-kit/sortable** — タッチ対応ドラッグ並び替え
 - **Google Fonts** — Plus Jakarta Sans（見出し・タイマー数字）+ Inter（本文）
 
@@ -30,6 +33,12 @@ iPhoneをメインターゲットにした PWA（Progressive Web App）。
 | `src/i18n/translations.ts` | ja / en 翻訳定義（`Translation` 型 + `translations` レコード） |
 | `src/utils/routineMarkdown.ts` | Markdown Export/Import 純粋関数 |
 | `src/components/shared/NowPlayingBar.tsx` | 常駐ミニプレイヤー（running/paused 時に全タブで表示） |
+| `server/app.ts` / `auth.ts` / `routines.ts` / `session.ts` | API（Hono）: パスキー登録・ログイン・復旧、ルーティンのスナップショット（revision 比較更新） |
+| `functions/api/[[route]].ts` | Pages Functions エントリ（server/app.ts を公開） |
+| `migrations/*.sql` / `wrangler.toml` | D1 スキーマ / 本番・staging の設定（RP ID `rt.kazusa.org`） |
+| `src/store/syncStore.ts` | 同期状態（baseRevision / dirty / conflict / pendingRemote） |
+| `src/sync/engine.ts` / `logic.ts` / `backup.ts` / `api.ts` | 同期エンジン（2秒 debounce 送信・起動/復帰時取得・タイマー中は保留）、判定ロジック、退避、API クライアント |
+| `src/components/shared/AccountSection.tsx` / `SyncConflictDialog.tsx` | 設定画面のアカウント・同期欄 / 衝突時の選択ダイアログ |
 
 ## 画面構成
 
@@ -213,6 +222,13 @@ npm run build  # 本番ビルド（dist/ に PWA ファイル生成）
 
 1. **PWA のまま認証 + クラウド同期を進める方針に決定** — ネイティブ版（RoutineNative / Routine-ios）は別リポジトリで独立。routine-app は PWA として継続強化する
 
+### 2026-11-03 — セッション11: クラウド同期の実装
+
+1. **方式決定** — Cloudflare（Pages Functions + D1）+ パスキー。Google ログインは iOS ホーム画面 PWA での動作が不確実なため不採用（Genspark / Codex の調査を踏まえて）
+2. **サーバー** — 1アカウント限定（初回登録に合言葉）、復旧コード、パスキー一覧/削除、他端末ログアウト、ルーティンのスナップショット API（revision 比較更新・409 で衝突通知）
+3. **クライアント** — 同期エンジン（編集2秒後に送信、起動/復帰/online で取得、タイマー実行中は反映保留、衝突は選択ダイアログ、上書き前に退避）、設定画面にアカウント・同期欄、Danger Zone を「この端末のデータを消す／クラウドのデータも消す」に分割
+4. **テスト基盤** — Vitest 導入（83 テスト）
+
 ---
 
 ## 実装済み機能チェックリスト
@@ -258,11 +274,11 @@ npm run build  # 本番ビルド（dist/ に PWA ファイル生成）
 - [ ] **CountdownTimer の手動入力 UX 改善** — MM:SS 入力が少し使いにくい（数字キーボードが閉じにくい等）
 - [ ] **ダークモードの細部調整** — `red-50` / `red-500` などハードコードの色がダークモードで浮く（SettingsScreen の danger zone など）
 
-### 🔔 次の大型対応: 認証 + クラウド同期（PWA のまま実装する方針で決定）
-- [ ] **ユーザー認証の導入** — メール認証 または Google 認証（どちらか／両方）
-- [ ] **データ保存をクラウドへ移行** — 現在の localStorage 保存からクラウド側（DB）へ
-- [ ] **デバイス間同期** — 同じユーザーIDでログインすれば、PC・iPhone など他の機器からも同じルーティン・設定が見られるようにする
-- 検討メモ: バックエンド候補（Supabase / Firebase / Cloudflare D1 + Workers 等）、未ログイン時の localStorage データの移行、オフライン時の扱い
+### 🔔 認証 + クラウド同期（実装済み・デプロイ待ち）
+- [x] パスキー認証 + Cloudflare D1 同期（設計: `docs/superpowers/specs/2026-11-03-cloud-sync-design.md`、計画: `docs/superpowers/plans/2026-11-03-cloud-sync.md`）
+- [ ] D1 作成・`wrangler.toml` の database_id 記入・`SETUP_PASSPHRASE` secret 設定
+- [ ] staging で実機確認（iPhone ホーム画面 PWA / Mac / Windows QR / オフライン / 衝突 / タイマー中の保留）
+- [ ] 本番デプロイ後、rt.kazusa.org で初回登録し復旧コードを保管
 
 ### 優先度低（しばらくテストしながら判断）
 - [ ] **バックグラウンドでのタイマー継続** — iOS PWA の制約でバックグラウンド停止。Page Visibility API で復帰時に補正はしているが完全ではない
