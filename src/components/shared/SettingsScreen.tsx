@@ -3,11 +3,16 @@ import { useRoutineStore } from '../../store/routineStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useTranslation } from '../../hooks/useTranslation'
 import { exportToMarkdown, importFromMarkdown } from '../../utils/routineMarkdown'
+import { useSyncStore } from '../../store/syncStore'
+import { clearCloudData, clearLocalData } from '../../sync/engine'
+import { AccountSection } from './AccountSection'
 
 export function SettingsScreen() {
   const { routines, importRoutines } = useRoutineStore()
   const { lang, setLang, theme, setTheme } = useSettingsStore()
   const { t } = useTranslation()
+  const loggedIn = useSyncStore((s) => s.loggedIn)
+  const dirty = useSyncStore((s) => s.dirty)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [importResult, setImportResult] = useState<string | null>(null)
   const [showImportOptions, setShowImportOptions] = useState(false)
@@ -126,9 +131,11 @@ export function SettingsScreen() {
         {/* Storage */}
         <div className="flex items-center justify-between px-4 py-4 rounded-2xl bg-surface-container-low">
           <span className="text-sm font-headline font-medium text-on-surface">{t.dataStorageLabel}</span>
-          <span className="text-sm text-outline font-headline">{t.dataStorageValue}</span>
+          <span className="text-sm text-outline font-headline">{loggedIn ? t.dataStorageCloud : t.dataStorageValue}</span>
         </div>
       </div>
+
+      <AccountSection />
 
       {/* Data section */}
       <div className="flex flex-col gap-3">
@@ -184,20 +191,30 @@ export function SettingsScreen() {
       {/* Danger zone */}
       <div>
         <p className="text-xs uppercase tracking-widest text-outline font-headline px-1 mb-3">Danger Zone</p>
-        <button
-          className="w-full flex items-center justify-between px-4 py-4 rounded-2xl bg-red-50 active:scale-[0.98] transition-all"
-          onClick={() => {
-            if (confirm(t.resetConfirm)) {
-              localStorage.clear()
-              location.reload()
-            }
-          }}
-        >
-          <span className="text-sm font-headline font-medium text-red-500">{t.resetData}</span>
-          <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-red-400">
-            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
-          </svg>
-        </button>
+        <div className="flex flex-col gap-3">
+          <button
+            className="w-full flex items-center justify-between px-4 py-4 rounded-2xl bg-red-50 active:scale-[0.98] transition-all"
+            onClick={() => {
+              const msg = loggedIn && dirty ? `${t.clearLocalConfirm}\n${t.clearLocalDirtyWarn}` : t.clearLocalConfirm
+              if (confirm(msg)) void clearLocalData()
+            }}
+          >
+            <span className="text-sm font-headline font-medium text-red-500">{t.clearLocalData}</span>
+          </button>
+          {loggedIn && (
+            <button
+              className="w-full flex items-center justify-between px-4 py-4 rounded-2xl bg-red-50 active:scale-[0.98] transition-all"
+              onClick={() => {
+                if (confirm(t.clearCloudConfirm1) && confirm(t.clearCloudConfirm2)) void clearCloudData()
+              }}
+            >
+              <span className="text-sm font-headline font-medium text-red-500">{t.clearCloudData}</span>
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current text-red-400">
+                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )

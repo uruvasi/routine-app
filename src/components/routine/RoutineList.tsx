@@ -18,6 +18,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { useRoutineStore } from '../../store/routineStore'
 import { useTranslation } from '../../hooks/useTranslation'
 import { RoutineEditor } from './RoutineEditor'
+import { resolveSelectedRoutine } from './resolveSelectedRoutine'
 import type { Routine } from '../../types'
 
 interface Props {
@@ -90,7 +91,7 @@ export function RoutineList({ onNavigateToTimer }: Props) {
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
   )
 
-  const selected = routines.find((r) => r.id === selectedId)
+  const selected = resolveSelectedRoutine(routines, selectedId)
 
   if (selected) {
     return (

@@ -10,6 +10,7 @@ import { useTimerStore } from './store/timerStore'
 import { useSettingsStore } from './store/settingsStore'
 import type { NavTab } from './types'
 import { startSyncEngine } from './sync/engine'
+import { SyncConflictDialog } from './components/shared/SyncConflictDialog'
 
 export default function App() {
   const [tab, setTab] = useState<NavTab>('countdown')
@@ -61,6 +62,7 @@ export default function App() {
 
       <NowPlayingBar onNavigate={setTab} />
       <BottomNav active={tab} onChange={setTab} />
+      <SyncConflictDialog />
     </div>
   )
 }

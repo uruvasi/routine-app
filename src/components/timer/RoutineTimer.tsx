@@ -5,6 +5,7 @@ import { useAudioAlert } from '../../hooks/useAudioAlert'
 import { useTranslation } from '../../hooks/useTranslation'
 import { CircularTimer } from './CircularTimer'
 import { Button } from '../shared/Button'
+import { resolveSelectedRoutine } from '../routine/resolveSelectedRoutine'
 
 interface Props {
   onEdit: () => void
@@ -23,7 +24,7 @@ export function RoutineTimer({ onEdit }: Props) {
 
   const activeTaskRef = useRef<HTMLDivElement>(null)
 
-  const activeRoutine = routines.find((r) => r.id === activeRoutineId)
+  const activeRoutine = resolveSelectedRoutine(routines, activeRoutineId)
   const currentTask = activeRoutine?.tasks[currentTaskIndex]
 
   useEffect(() => {
