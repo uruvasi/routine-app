@@ -1,4 +1,4 @@
 # Copy to .dev.vars for `npx wrangler pages dev dist` on localhost
 RP_ID=localhost
 RP_ORIGIN=http://localhost:8788
-SETUP_PASSPHRASE=dev
+SETUP_PASSPHRASE=dev-passphrase

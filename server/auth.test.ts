@@ -113,3 +113,24 @@ describe('passkey login', () => {
     expect(await again.json()).toEqual({ error: 'challenge_expired' })
   })
 })
+
+describe('setup passphrase safety', () => {
+  it('refuses registration when SETUP_PASSPHRASE is unset (fail closed)', async () => {
+    const res = await call('/api/auth/register/options', {
+      method: 'POST',
+      json: { passphrase: '' },
+      env: { SETUP_PASSPHRASE: undefined as unknown as string },
+    })
+    expect(res.status).toBe(403)
+    expect(await res.json()).toEqual({ error: 'setup_disabled' })
+  })
+  it('refuses registration when SETUP_PASSPHRASE is shorter than 8 chars', async () => {
+    const res = await call('/api/auth/register/options', {
+      method: 'POST',
+      json: { passphrase: 'short' },
+      env: { SETUP_PASSPHRASE: 'short' },
+    })
+    expect(res.status).toBe(403)
+    expect(await res.json()).toEqual({ error: 'setup_disabled' })
+  })
+})

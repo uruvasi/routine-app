@@ -11,7 +11,7 @@ export async function resetDb() {
 
 export function call(
   path: string,
-  init: RequestInit & { cookie?: string; origin?: string; json?: unknown } = {},
+  init: RequestInit & { cookie?: string; origin?: string; json?: unknown; env?: Partial<typeof env> } = {},
 ) {
   const headers = new Headers(init.headers)
   headers.set('Origin', init.origin ?? ORIGIN)
@@ -22,7 +22,7 @@ export function call(
     body = JSON.stringify(init.json)
   }
   const url = `${init.origin ?? ORIGIN}${path}`
-  return createApp().request(url, { ...init, headers, body }, env)
+  return createApp().request(url, { ...init, headers, body }, { ...env, ...init.env })
 }
 
 export async function seedUser(id = 'u1') {

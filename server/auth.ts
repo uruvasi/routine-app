@@ -26,6 +26,7 @@ import {
 export const CHALLENGE_COOKIE = '__Host-rt_chal'
 const CHALLENGE_TTL_MS = 5 * 60 * 1000
 const RP_NAME = 'Routine'
+const MIN_SETUP_PASSPHRASE = 8
 const RECOVER_FAIL_LIMIT = 10
 const RECOVER_FAIL_WINDOW_MS = 10 * 60 * 1000
 const RECOVERY_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // no 0/O/1/I
@@ -101,6 +102,11 @@ export function authRoutes() {
     let purpose: ChallengePurpose
     let userId: string
     if (!(await hasUser(c.env))) {
+      // Fail closed: a missing/weak secret must never let an arbitrary visitor become the owner.
+      const secret = c.env.SETUP_PASSPHRASE
+      if (typeof secret !== 'string' || secret.length < MIN_SETUP_PASSPHRASE) {
+        return c.json({ error: 'setup_disabled' }, 403)
+      }
       const ok =
         typeof body.passphrase === 'string' &&
         (await sha256Hex(body.passphrase)) === (await sha256Hex(c.env.SETUP_PASSPHRASE))
