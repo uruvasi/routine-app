@@ -1,0 +1,26 @@
+name = "routine-app"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+RP_ID = "rt.kazusa.org"
+RP_ORIGIN = "https://rt.kazusa.org"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "routine-app-db"
+database_id = "REPLACE_WITH_PRODUCTION_DATABASE_ID"
+migrations_dir = "migrations"
+
+[env.preview.vars]
+RP_ID = "staging.routine-app.pages.dev"
+RP_ORIGIN = "https://staging.routine-app.pages.dev"
+
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "routine-app-db-staging"
+database_id = "REPLACE_WITH_STAGING_DATABASE_ID"
+migrations_dir = "migrations"
+
+# SETUP_PASSPHRASE is a Pages secret (production and preview each), never committed.
