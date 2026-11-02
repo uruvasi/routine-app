@@ -13,11 +13,21 @@ import type {
   RegistrationResponseJSON,
 } from '@simplewebauthn/server'
 import type { AppEnv, Env } from './env'
-import { createSession, randomToken, readSession, setSessionCookie, sha256Hex } from './session'
+import {
+  createSession,
+  randomToken,
+  readSession,
+  requireAuth,
+  revokeSessions,
+  setSessionCookie,
+  sha256Hex,
+} from './session'
 
 export const CHALLENGE_COOKIE = '__Host-rt_chal'
 const CHALLENGE_TTL_MS = 5 * 60 * 1000
 const RP_NAME = 'Routine'
+const RECOVER_FAIL_LIMIT = 10
+const RECOVER_FAIL_WINDOW_MS = 10 * 60 * 1000
 const RECOVERY_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // no 0/O/1/I
 
 type ChallengePurpose = 'register-first' | 'register-add' | 'login'
@@ -225,6 +235,69 @@ export function authRoutes() {
       .run()
     const token = await createSession(c.env, pk.user_id)
     setSessionCookie(c, token)
+    return c.json({ ok: true })
+  })
+
+  r.post('/recover', async (c) => {
+    const ip = c.req.header('CF-Connecting-IP') ?? 'unknown'
+    const now = Date.now()
+    const fails = await c.env.DB.prepare(
+      "SELECT COUNT(*) AS n FROM challenges WHERE purpose = 'recover_fail' AND challenge = ? AND expires_at > ?",
+    )
+      .bind(ip, now)
+      .first<{ n: number }>()
+    if ((fails?.n ?? 0) >= RECOVER_FAIL_LIMIT) return c.json({ error: 'rate_limited' }, 429)
+
+    const body = (await c.req.json().catch(() => ({}))) as { code?: string }
+    const code = normalizeRecoveryCode(typeof body.code === 'string' ? body.code : '')
+    const row = await c.env.DB.prepare('SELECT user_id FROM recovery_codes WHERE code_hash = ?')
+      .bind(await sha256Hex(code))
+      .first<{ user_id: string }>()
+    if (!row) {
+      await c.env.DB.prepare(
+        "INSERT INTO challenges (id, challenge, purpose, user_id, expires_at) VALUES (?, ?, 'recover_fail', NULL, ?)",
+      )
+        .bind(randomToken(16), ip, now + RECOVER_FAIL_WINDOW_MS)
+        .run()
+      return c.json({ error: 'auth_failed' }, 401)
+    }
+    await revokeSessions(c.env, row.user_id)
+    const token = await createSession(c.env, row.user_id)
+    setSessionCookie(c, token)
+    const recoveryCode = await issueRecoveryCode(c.env, row.user_id)
+    return c.json({ ok: true, recoveryCode })
+  })
+
+  r.get('/passkeys', requireAuth, async (c) => {
+    const rows = await c.env.DB.prepare(
+      'SELECT credential_id, label, created_at, last_used_at FROM passkeys WHERE user_id = ? ORDER BY created_at',
+    )
+      .bind(c.var.userId)
+      .all<{ credential_id: string; label: string | null; created_at: number; last_used_at: number | null }>()
+    return c.json({
+      passkeys: rows.results.map((p) => ({
+        id: p.credential_id,
+        label: p.label,
+        createdAt: p.created_at,
+        lastUsedAt: p.last_used_at,
+      })),
+    })
+  })
+
+  r.delete('/passkeys/:id', requireAuth, async (c) => {
+    const n = await c.env.DB.prepare('SELECT COUNT(*) AS n FROM passkeys WHERE user_id = ?')
+      .bind(c.var.userId)
+      .first<{ n: number }>()
+    if ((n?.n ?? 0) <= 1) return c.json({ error: 'last_passkey' }, 409)
+    const res = await c.env.DB.prepare('DELETE FROM passkeys WHERE user_id = ? AND credential_id = ?')
+      .bind(c.var.userId, c.req.param('id'))
+      .run()
+    if (!res.meta.changes) return c.json({ error: 'not_found' }, 404)
+    return c.json({ ok: true })
+  })
+
+  r.post('/revoke-others', requireAuth, async (c) => {
+    await revokeSessions(c.env, c.var.userId, c.var.sessionHash)
     return c.json({ ok: true })
   })
 
