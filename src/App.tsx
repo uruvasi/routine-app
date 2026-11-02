@@ -9,6 +9,7 @@ import { useWakeLock } from './hooks/useWakeLock'
 import { useTimerStore } from './store/timerStore'
 import { useSettingsStore } from './store/settingsStore'
 import type { NavTab } from './types'
+import { startSyncEngine } from './sync/engine'
 
 export default function App() {
   const [tab, setTab] = useState<NavTab>('countdown')
@@ -21,6 +22,8 @@ export default function App() {
       document.documentElement.classList.remove('dark')
     }
   }, [theme])
+  useEffect(() => startSyncEngine(), [])
+
   const status = useTimerStore((s) => s.status)
   const remaining = useTimerStore((s) => s.remaining)
   const total = useTimerStore((s) => s.total)
