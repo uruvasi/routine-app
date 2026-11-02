@@ -15,6 +15,8 @@ let api: SyncApi = realApi
 let debounce: ReturnType<typeof setTimeout> | null = null
 let inflight = false
 let applyingRemote = false
+/** Bumped by clear operations; in-flight results from an older epoch are discarded. */
+let epoch = 0
 
 const sync = () => useSyncStore.getState()
 const setSync = useSyncStore.setState
@@ -60,10 +62,12 @@ async function push(): Promise<void> {
   const s = sync()
   if (!s.loggedIn || s.conflict || inflight) return
   const routines = useRoutineStore.getState().routines
+  const myEpoch = epoch
   inflight = true
   setSync({ status: 'syncing' })
   try {
     const res = await api.putRoutines(s.baseRevision ?? 0, routines)
+    if (myEpoch !== epoch) return
     if ('conflict' in res) {
       setSync({ conflict: { kind: s.baseRevision === null ? 'initial' : 'revision', remote: res.conflict }, status: 'idle' })
       return
@@ -72,7 +76,7 @@ async function push(): Promise<void> {
     setSync({ baseRevision: res.revision, dirty: !stillSame, lastSyncedAt: Date.now(), status: 'idle' })
     if (!stillSame) schedulePush()
   } catch (e) {
-    handleError(e)
+    if (myEpoch === epoch) handleError(e)
   } finally {
     inflight = false
   }
@@ -82,8 +86,10 @@ async function push(): Promise<void> {
 export async function syncNow(): Promise<void> {
   if (!sync().loggedIn || sync().conflict) return
   setSync({ status: 'syncing' })
+  const myEpoch = epoch
   try {
     const remote = await api.getRoutines()
+    if (myEpoch !== epoch) return
     const r = useRoutineStore.getState()
     const s = sync()
     const decision = decideOnFetch(
@@ -145,7 +151,9 @@ export async function resolveConflict(choice: 'use-remote' | 'use-local'): Promi
   if (!c) return
   if (choice === 'use-remote') {
     saveBackup(useRoutineStore.getState().routines)
-    setSync({ conflict: null })
+    if (debounce) clearTimeout(debounce)
+    debounce = null
+    setSync({ conflict: null, dirty: false })
     applyRemote(c.remote, false)
   } else {
     saveBackup(c.remote.routines)
@@ -155,6 +163,7 @@ export async function resolveConflict(choice: 'use-remote' | 'use-local'): Promi
 }
 
 export async function clearLocalData(): Promise<void> {
+  epoch++
   const routines = useRoutineStore.getState().routines
   if (routines.length) saveBackup(routines)
   if (debounce) clearTimeout(debounce)
@@ -170,7 +179,11 @@ export async function clearLocalData(): Promise<void> {
 }
 
 export async function clearCloudData(): Promise<void> {
+  epoch++
   const { revision } = await api.deleteRoutines()
+  epoch++
+  // The routine being timed is about to disappear; stop the timer instead of leaving it stuck.
+  if (timerBusy() && useTimerStore.getState().mode === 'routine') useTimerStore.getState().reset()
   if (debounce) clearTimeout(debounce)
   debounce = null
   const routines = useRoutineStore.getState().routines
@@ -191,8 +204,29 @@ export function startSyncEngine(deps: Deps = {}): () => void {
   })
   const unsubTimer = useTimerStore.subscribe((state) => {
     const pending = sync().pendingRemote
-    if (pending && state.status !== 'running' && state.status !== 'paused') applyRemote(pending, true)
+    if (!pending || state.status === 'running' || state.status === 'paused') return
+    if (sync().dirty || sync().conflict) {
+      // Local edits happened while the remote copy was held: never overwrite them silently.
+      // Drop the held copy and push; a 409 raises the conflict dialog instead.
+      setSync({ pendingRemote: null })
+      if (!sync().conflict) void push()
+      return
+    }
+    applyRemote(pending, true)
   })
+  // Another tab of this app wrote localStorage: reload our in-memory copy (not a local edit).
+  const onStorage = (e: Event) => {
+    const key = (e as StorageEvent).key
+    if (key === 'routine-store') {
+      applyingRemote = true
+      void Promise.resolve(useRoutineStore.persist.rehydrate()).finally(() => {
+        applyingRemote = false
+      })
+    } else if (key === 'sync-store') {
+      void useSyncStore.persist.rehydrate()
+    }
+  }
+  events.addEventListener('storage', onStorage)
   const onOnline = () => void refreshAndSync()
   const onVisible = () => {
     if (doc?.visibilityState === 'visible') void refreshAndSync()
@@ -206,6 +240,7 @@ export function startSyncEngine(deps: Deps = {}): () => void {
     unsubRoutines()
     unsubTimer()
     events.removeEventListener('online', onOnline)
+    events.removeEventListener('storage', onStorage)
     doc?.removeEventListener('visibilitychange', onVisible)
     if (debounce) clearTimeout(debounce)
     debounce = null
