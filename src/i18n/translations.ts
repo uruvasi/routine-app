@@ -104,6 +104,11 @@ export type Translation = {
   clearCloudData: string
   clearCloudConfirm1: string
   clearCloudConfirm2: string
+  restoreBackup: string
+  noBackups: string
+  backupItem: (date: string, count: number) => string
+  restoreConfirm: string
+  restoreDone: string
   // speech
   speechLang: string
   speakTimerStart: (min: number) => string
@@ -215,6 +220,11 @@ export const translations: Record<Lang, Translation> = {
     clearCloudData: 'クラウドのデータも消す',
     clearCloudConfirm1: 'クラウド上のルーティンを消します。すべての端末から消えます。よろしいですか？',
     clearCloudConfirm2: '本当に消しますか？この操作は元に戻せません。',
+    restoreBackup: 'バックアップから復元',
+    noBackups: 'バックアップはありません',
+    backupItem: (date, count) => `${date}（${count} 件）`,
+    restoreConfirm: 'このバックアップで今のルーティンを置き換えますか？（今のデータもバックアップされます）',
+    restoreDone: '復元しました',
     speechLang: 'ja-JP',
     speakTimerStart: (min) => `${min}分のタイマーを始めます`,
     speakOneMinLeft: '残り1分です',
@@ -324,6 +334,11 @@ export const translations: Record<Lang, Translation> = {
     clearCloudData: 'Also delete cloud data',
     clearCloudConfirm1: 'Delete routines in the cloud? They will disappear from all devices.',
     clearCloudConfirm2: 'Really delete? This cannot be undone.',
+    restoreBackup: 'Restore from backup',
+    noBackups: 'No backups',
+    backupItem: (date, count) => `${date} (${count})`,
+    restoreConfirm: 'Replace current routines with this backup? (Current data is backed up too.)',
+    restoreDone: 'Restored',
     speechLang: 'en-US',
     speakTimerStart: (min) => `Starting ${min} minute timer`,
     speakOneMinLeft: 'One minute remaining',

@@ -164,6 +164,7 @@ describe('fetch & conflicts', () => {
     await engine.resolveConflict('use-remote')
     expect(useRoutineStore.getState().routines).toEqual(R('remote'))
     expect(listBackups().length).toBe(before + 1)
+    expect(listBackups()[0].kind).toBe('keep')
     expect(useSyncStore.getState().conflict).toBeNull()
     expect(useSyncStore.getState().baseRevision).toBe(7)
   })

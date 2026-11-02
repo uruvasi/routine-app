@@ -6,6 +6,7 @@ import { exportToMarkdown, importFromMarkdown } from '../../utils/routineMarkdow
 import { useSyncStore } from '../../store/syncStore'
 import { clearCloudData, clearLocalData } from '../../sync/engine'
 import { AccountSection } from './AccountSection'
+import { listBackups, restoreBackup, type BackupInfo } from '../../sync/backup'
 
 export function SettingsScreen() {
   const { routines, importRoutines } = useRoutineStore()
@@ -17,6 +18,16 @@ export function SettingsScreen() {
   const [importResult, setImportResult] = useState<string | null>(null)
   const [showImportOptions, setShowImportOptions] = useState(false)
   const importReplaceRef = useRef(false)
+  const [backups, setBackups] = useState<BackupInfo[] | null>(null)
+
+  const handleRestore = (key: string) => {
+    if (!confirm(t.restoreConfirm)) return
+    const restored = restoreBackup(key, routines)
+    if (!restored) return
+    importRoutines(restored, true)
+    setBackups(listBackups())
+    setImportResult(t.restoreDone)
+  }
 
   const handleExport = () => {
     const text = exportToMarkdown(routines)
@@ -183,6 +194,27 @@ export function SettingsScreen() {
           onChange={handleImport}
         />
       </div>
+
+      <button
+        className="flex items-center justify-between px-4 py-4 rounded-2xl bg-surface-container-low active:scale-[0.98] transition-all"
+        onClick={() => setBackups((b) => (b ? null : listBackups()))}
+      >
+        <span className="text-sm font-headline font-medium text-on-surface">{t.restoreBackup}</span>
+      </button>
+      {backups && (
+        <div className="flex flex-col gap-2 px-1">
+          {backups.length === 0 && <p className="text-xs text-outline font-headline px-3">{t.noBackups}</p>}
+          {backups.map((b) => (
+            <button
+              key={b.key}
+              className="flex items-center justify-between px-4 py-3 rounded-xl bg-surface-container-highest text-sm text-on-surface active:scale-[0.98] transition-all"
+              onClick={() => handleRestore(b.key)}
+            >
+              <span>{t.backupItem(new Date(b.at).toLocaleString(), b.count)}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {importResult && (
         <p className="text-sm text-center text-primary font-headline">{importResult}</p>

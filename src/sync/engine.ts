@@ -45,7 +45,7 @@ function applyRemote(remote: Snapshot, backup: boolean) {
     setSync({ pendingRemote: remote })
     return
   }
-  if (backup) saveBackup(useRoutineStore.getState().routines)
+  if (backup) saveBackup(useRoutineStore.getState().routines, Date.now(), remote.routines.length === 0 ? 'keep' : 'sync')
   setRoutinesFromRemote(remote.routines)
   setSync({ baseRevision: remote.revision, dirty: false, pendingRemote: null, lastSyncedAt: Date.now(), status: 'idle' })
 }
@@ -150,13 +150,13 @@ export async function resolveConflict(choice: 'use-remote' | 'use-local'): Promi
   const c = sync().conflict
   if (!c) return
   if (choice === 'use-remote') {
-    saveBackup(useRoutineStore.getState().routines)
+    saveBackup(useRoutineStore.getState().routines, Date.now(), 'keep')
     if (debounce) clearTimeout(debounce)
     debounce = null
     setSync({ conflict: null, dirty: false })
     applyRemote(c.remote, false)
   } else {
-    saveBackup(c.remote.routines)
+    saveBackup(c.remote.routines, Date.now(), 'keep')
     setSync({ conflict: null, baseRevision: c.remote.revision, dirty: true })
     await push()
   }
@@ -165,7 +165,7 @@ export async function resolveConflict(choice: 'use-remote' | 'use-local'): Promi
 export async function clearLocalData(): Promise<void> {
   epoch++
   const routines = useRoutineStore.getState().routines
-  if (routines.length) saveBackup(routines)
+  if (routines.length) saveBackup(routines, Date.now(), 'keep')
   if (debounce) clearTimeout(debounce)
   debounce = null
   applyingRemote = true
@@ -187,7 +187,7 @@ export async function clearCloudData(): Promise<void> {
   if (debounce) clearTimeout(debounce)
   debounce = null
   const routines = useRoutineStore.getState().routines
-  if (routines.length) saveBackup(routines)
+  if (routines.length) saveBackup(routines, Date.now(), 'keep')
   setRoutinesFromRemote([])
   setSync({ baseRevision: revision, dirty: false, conflict: null, pendingRemote: null, lastSyncedAt: Date.now() })
 }
