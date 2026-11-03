@@ -138,7 +138,7 @@
 
 ### 5.9 環境と RP ID
 - **本番（オーナー決定）:** 本番 URL は `https://rt.kazusa.org`。WebAuthn の RP ID は `rt.kazusa.org` に固定し、expected origin は `https://rt.kazusa.org` だけにする。
-  - `routine-app.pages.dev` からはログインさせない（★）。同期 UI に「rt.kazusa.org で開いてください」と表示する。
+  - `routine-app-bpz.pages.dev` からはログインさせない（★）。同期 UI に「rt.kazusa.org で開いてください」と表示する。
   - 後で RP ID を変えると登録済みのパスキーが使えなくなるので、変更しない。
 - **検証環境:**
   - 固定のブランチ別名（例: `staging` ブランチ → `staging.<project>.pages.dev`）と、別の D1 データベース、別のセットアップ用合言葉を用意する。

@@ -18,8 +18,8 @@
 ## Global Constraints
 
 - 本番 RP ID は `rt.kazusa.org`、expected origin は `https://rt.kazusa.org` のみ。RP ID を後から変えない。
-- 検証環境: `staging` ブランチを `staging.routine-app.pages.dev` にデプロイし、別の D1 と別の合言葉を使う。RP ID は `staging.routine-app.pages.dev`。
-- 上記以外のオリジン（`routine-app.pages.dev`、他のプレビュー）ではログイン系 API が `403 { error: 'login_unavailable' }` を返す。
+- 検証環境: `staging` ブランチを `staging.routine-app-bpz.pages.dev` にデプロイし、別の D1 と別の合言葉を使う。RP ID は `staging.routine-app-bpz.pages.dev`。
+- 上記以外のオリジン（`routine-app-bpz.pages.dev`、他のプレビュー）ではログイン系 API が `403 { error: 'login_unavailable' }` を返す。
 - アカウントは 1 つだけ作れる。最初の登録にはセットアップ用合言葉（secret `SETUP_PASSPHRASE`）が必要。
 - セッション Cookie は `__Host-rt_session`（`HttpOnly; Secure; SameSite=Lax; Path=/`）。期限は 180 日で、アクセス時に延長する。D1 にはトークンの SHA-256 ハッシュだけを保存する。
 - 同期対象はルーティンとタスクのみ。`settings-store`（言語・テーマ）と `timer-store` は同期しない。
@@ -104,7 +104,7 @@ src/components/shared/SyncConflictDialog.tsx
 **`wrangler.toml` に決める値:**
 - `name = "routine-app"`, `pages_build_output_dir = "dist"`, `compatibility_date` は作業日。
 - `[[d1_databases]] binding = "DB"`。本番 DB 名は `routine-app-db`。`[env.preview]` の DB 名は `routine-app-db-staging`。
-- `[vars]` は `RP_ID = "rt.kazusa.org"`, `RP_ORIGIN = "https://rt.kazusa.org"`。`[env.preview.vars]` は `RP_ID = "staging.routine-app.pages.dev"`, `RP_ORIGIN = "https://staging.routine-app.pages.dev"`。
+- `[vars]` は `RP_ID = "rt.kazusa.org"`, `RP_ORIGIN = "https://rt.kazusa.org"`。`[env.preview.vars]` は `RP_ID = "staging.routine-app-bpz.pages.dev"`, `RP_ORIGIN = "https://staging.routine-app-bpz.pages.dev"`。
 - `SETUP_PASSPHRASE` は wrangler.toml に書かず、Pages の secret として登録する（Task 9）。
 
 **`migrations/0001_init.sql` のテーブル:**
@@ -131,7 +131,7 @@ src/components/shared/SyncConflictDialog.tsx
 
 - [ ] **Step 1: 失敗するテストを書く**（`server/session.test.ts`、`SELF.fetch` または `createApp().request(path, init, env)` を使う）
   - Cookie なしの `GET /api/session` は `{ loggedIn:false, hasUser:false, loginAvailable:true }` を返す（Origin は `https://rt.kazusa.org`）。
-  - Origin が `https://routine-app.pages.dev` のとき、`loginAvailable:false` になる。`POST /api/auth/login/options` は 403 で `login_unavailable` を返す。
+  - Origin が `https://routine-app-bpz.pages.dev` のとき、`loginAvailable:false` になる。`POST /api/auth/login/options` は 403 で `login_unavailable` を返す。
   - `createSession` したトークンを Cookie に付けると `loggedIn:true` になる。D1 の `sessions.token_hash` は生トークンと一致しない。
   - 期限切れのセッションでは `loggedIn:false` になる。
   - 有効なセッションでアクセスすると `expires_at` が延びる（180 日）。
@@ -440,6 +440,6 @@ src/components/shared/SyncConflictDialog.tsx
   - オフラインで編集し、復帰後に送信される。
   - 衝突ダイアログが出る。
   - タイマー実行中に PC で編集 → タイマー停止後に反映される。
-  - `routine-app.pages.dev` 系の URL ではログインが無効になる。
+  - `routine-app-bpz.pages.dev` 系の URL ではログインが無効になる。
 - [ ] **Step 4:** README / CLAUDE.md / version を更新してコミットする — `chore: deploy D1 migrations, staging env, docs (vX.Y.Z)`
 - [ ] **Step 5:** main にマージする前にオーナーの確認を取る。マージ後、本番 `https://rt.kazusa.org` で初回登録を行い、復旧コードをメモしてもらう。

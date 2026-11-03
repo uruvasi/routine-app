@@ -87,7 +87,7 @@ npx wrangler d1 create routine-app-db-staging  # put database_id into [env.previ
 The GitHub `CLOUDFLARE_API_TOKEN` needs D1 edit permission (migrations run in CI).
 
 - Production: `https://rt.kazusa.org` (passkey RP ID `rt.kazusa.org` — never change it)
-- Staging: push to `staging` → `https://staging.routine-app.pages.dev` (separate D1 and passkeys)
+- Staging: push to `staging` → `https://staging.routine-app-bpz.pages.dev` (separate D1 and passkeys)
 
 ## Local development
 

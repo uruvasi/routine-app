@@ -12,7 +12,7 @@ describe('GET /api/session', () => {
   })
 
   it('reports login unavailable on other origins', async () => {
-    const res = await call('/api/session', { origin: 'https://routine-app.pages.dev' })
+    const res = await call('/api/session', { origin: 'https://routine-app-bpz.pages.dev' })
     expect(((await res.json()) as { loginAvailable: boolean }).loginAvailable).toBe(false)
   })
 
@@ -60,7 +60,7 @@ describe('POST /api/logout', () => {
 
 describe('origin guard', () => {
   it('rejects /api/auth/* from other origins with login_unavailable', async () => {
-    const res = await call('/api/auth/login/options', { method: 'POST', origin: 'https://routine-app.pages.dev' })
+    const res = await call('/api/auth/login/options', { method: 'POST', origin: 'https://routine-app-bpz.pages.dev' })
     expect(res.status).toBe(403)
     expect(await res.json()).toEqual({ error: 'login_unavailable' })
   })
