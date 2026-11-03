@@ -120,7 +120,7 @@ npm run build  # 本番ビルド（dist/ に PWA ファイル生成）
 
 - バージョンは `package.json` の `version` を管理。デプロイごとに手動で上げる
 - `vite.config.ts` で `__APP_VERSION__` としてビルド時に埋め込み、AppHeader に表示
-- 現在: **v1.1.0**
+- 現在: **v1.2.0**
 
 ---
 
@@ -227,7 +227,8 @@ npm run build  # 本番ビルド（dist/ に PWA ファイル生成）
 1. **方式決定** — Cloudflare（Pages Functions + D1）+ パスキー。Google ログインは iOS ホーム画面 PWA での動作が不確実なため不採用（Genspark / Codex の調査を踏まえて）
 2. **サーバー** — 1アカウント限定（初回登録に合言葉）、復旧コード、パスキー一覧/削除、他端末ログアウト、ルーティンのスナップショット API（revision 比較更新・409 で衝突通知）
 3. **クライアント** — 同期エンジン（編集2秒後に送信、起動/復帰/online で取得、タイマー実行中は反映保留、衝突は選択ダイアログ、上書き前に退避）、設定画面にアカウント・同期欄、Danger Zone を「この端末のデータを消す／クラウドのデータも消す」に分割
-4. **テスト基盤** — Vitest 導入（83 テスト）
+4. **テスト基盤** — Vitest 導入（98 テスト）
+5. **staging で実機確認** — iPhone ホーム画面 PWA でパスキー登録、Mac でログイン、Mac の編集が iPhone に反映されることを確認。v1.2.0 として本番へ
 
 ---
 
@@ -274,10 +275,11 @@ npm run build  # 本番ビルド（dist/ に PWA ファイル生成）
 - [ ] **CountdownTimer の手動入力 UX 改善** — MM:SS 入力が少し使いにくい（数字キーボードが閉じにくい等）
 - [ ] **ダークモードの細部調整** — `red-50` / `red-500` などハードコードの色がダークモードで浮く（SettingsScreen の danger zone など）
 
-### 🔔 認証 + クラウド同期（実装済み・デプロイ待ち）
+### 🔔 認証 + クラウド同期（v1.2.0 で本番デプロイ）
 - [x] パスキー認証 + Cloudflare D1 同期（設計: `docs/superpowers/specs/2026-11-03-cloud-sync-design.md`、計画: `docs/superpowers/plans/2026-11-03-cloud-sync.md`）
-- [ ] D1 作成・`wrangler.toml` の database_id 記入・`SETUP_PASSPHRASE` secret 設定
-- [ ] staging で実機確認（iPhone ホーム画面 PWA / Mac / Windows QR / オフライン / 衝突 / タイマー中の保留）
+- [x] D1 作成・`wrangler.toml` の database_id 記入・`SETUP_PASSPHRASE` secret 設定
+- [x] staging で実機確認（iPhone ホーム画面 PWA / Mac ログイン / 編集の反映）
+- [ ] 普段使いで追加確認（Windows QR / オフライン / 衝突 / タイマー中の保留）
 - [ ] 本番デプロイ後、rt.kazusa.org で初回登録し復旧コードを保管
 
 ### 優先度低（しばらくテストしながら判断）
