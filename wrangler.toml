@@ -10,7 +10,7 @@ RP_ORIGIN = "https://rt.kazusa.org"
 [[d1_databases]]
 binding = "DB"
 database_name = "routine-app-db"
-database_id = "REPLACE_WITH_PRODUCTION_DATABASE_ID"
+database_id = "5b10511a-1c9a-4c52-98a3-0508557e3500"
 migrations_dir = "migrations"
 
 [env.preview.vars]
@@ -20,7 +20,7 @@ RP_ORIGIN = "https://staging.routine-app.pages.dev"
 [[env.preview.d1_databases]]
 binding = "DB"
 database_name = "routine-app-db-staging"
-database_id = "REPLACE_WITH_STAGING_DATABASE_ID"
+database_id = "0773be70-424e-4fc2-b34b-8e85d0a44564"
 migrations_dir = "migrations"
 
 # SETUP_PASSPHRASE is a Pages secret (production and preview each), never committed.
