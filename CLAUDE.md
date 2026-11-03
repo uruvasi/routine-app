@@ -280,7 +280,7 @@ npm run build  # 本番ビルド（dist/ に PWA ファイル生成）
 - [x] D1 作成・`wrangler.toml` の database_id 記入・`SETUP_PASSPHRASE` secret 設定
 - [x] staging で実機確認（iPhone ホーム画面 PWA / Mac ログイン / 編集の反映）
 - [ ] 普段使いで追加確認（Windows QR / オフライン / 衝突 / タイマー中の保留）
-- [ ] 本番デプロイ後、rt.kazusa.org で初回登録し復旧コードを保管
+- [x] 本番デプロイ後、rt.kazusa.org で初回登録し復旧コードを保管
 
 ### 優先度低（しばらくテストしながら判断）
 - [ ] **バックグラウンドでのタイマー継続** — iOS PWA の制約でバックグラウンド停止。Page Visibility API で復帰時に補正はしているが完全ではない
