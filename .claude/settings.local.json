@@ -2,11 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(gh run:*)",
-      "Bash(git:*)",
-      "Read(//Users/uruvasi/Downloads/**)",
-      "Bash(unzip -l /Users/uruvasi/Downloads/stitch.zip)",
-      "Bash(unzip -o stitch.zip -d stitch_extracted)",
-      "Bash(npm run:*)"
+      "Bash(git:*)"
     ]
   }
 }
